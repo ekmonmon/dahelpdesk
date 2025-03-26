@@ -30,7 +30,7 @@ def handle_update(payload):
 # Asynchronous function to subscribe to realtime updates
 async def subscribe_realtime():
     # Create a realtime channel asynchronously
-    channel = supabase.realtime.channel("tickets-channel")
+    channel = supabase.realtime.channel("database")
     channel.on_postgres_changes(
         "INSERT",
         schema="public",
