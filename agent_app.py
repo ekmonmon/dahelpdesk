@@ -1,14 +1,29 @@
 import streamlit as st
+import sqlite3
 import datetime
 import os
-from supabase import create_client, Client
 
-# Load Supabase credentials from Streamlit secrets
-SUPABASE_URL = st.secrets["https://twyoryuxgvskitkvauyx.supabase.co"]
-SUPABASE_KEY = st.secrets["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3eW9yeXV4Z3Zza2l0a3ZhdXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5Njc1MDgsImV4cCI6MjA1ODU0MzUwOH0.P9M25ysxrIOpucNaUKQ-UzExO_MbF2ucTGovVU-uILk"]
+# Database connection
+conn = sqlite3.connect("helpdesk.db", check_same_thread=False)
+cursor = conn.cursor()
 
-# Initialize Supabase client
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+# Ensure the tickets table has the correct schema
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS tickets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ticket_number TEXT UNIQUE,
+        lark_email TEXT,
+        campaign TEXT,
+        impact TEXT,
+        request TEXT,
+        description TEXT,
+        priority TEXT,
+        attachment TEXT,
+        status TEXT DEFAULT 'Open',
+        submission_time TEXT
+    );
+""")
+conn.commit()
 
 # Initialize session state for confirmation pop-up
 if "confirm_submission" not in st.session_state:
@@ -66,7 +81,7 @@ if st.session_state.confirm_submission:
         ticket_number = f"DAH-{datetime.datetime.now().strftime('%H%M%S')}"
 
         # Save file if uploaded
-        attachment_url = None
+        attachment_path = None
         if attachment:
             attachment_dir = "attachments"
             os.makedirs(attachment_dir, exist_ok=True)
@@ -74,48 +89,27 @@ if st.session_state.confirm_submission:
             # Avoid duplicate file names
             timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
             filename = f"{timestamp}_{attachment.name}"
-            file_path = os.path.join(attachment_dir, filename)
+            attachment_path = os.path.join(attachment_dir, filename)
 
-            with open(file_path, "wb") as f:
+            with open(attachment_path, "wb") as f:
                 f.write(attachment.getbuffer())
 
-            # Upload to Supabase Storage (optional)
-            try:
-                supabase.storage.from_("ticket_attachments").upload(file_path, filename)
-                attachment_url = f"{SUPABASE_URL}/storage/v1/object/public/ticket_attachments/{filename}"
-            except Exception as e:
-                st.error(f"🚨 File upload failed: {str(e)}")
+            # Debugging message
+            st.write(f"✅ File saved at: {attachment_path}")
 
         # Get submission time
         submission_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        # Insert ticket into Supabase
-        try:
-            response = supabase.table("tickets").insert({
-                "ticket_number": ticket_number,
-                "lark_email": lark_email,
-                "campaign": campaign,
-                "impact": impact,
-                "request": request,
-                "description": description,
-                "priority": priority,
-                "attachment": attachment_url,
-                "status": "Open",
-                "submission_time": submission_time
-            }).execute()
+        # Insert ticket into the database
+        cursor.execute("""
+            INSERT INTO tickets (ticket_number, lark_email, campaign, impact, request, description, priority, attachment, status, submission_time)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (ticket_number, lark_email, campaign, impact, request, description, priority, attachment_path, "Open", submission_time))
+        conn.commit()
 
-            # Debugging Step: Print API response
-            st.write("🔍 API Response:", response)
-
-            # Check for errors in response
-            if "error" in response and response["error"]:
-                st.error(f"🚨 Submission Failed: {response['error']['message']}")
-            else:
-                st.success("✅ Ticket Submitted!")
-                st.write(f"🎫 Your Ticket Number: **{ticket_number}**")
-
-        except Exception as e:
-            st.error(f"🚨 Submission Failed: {str(e)}")
+        st.success("✅ Ticket Submitted!")
+        st.write("📌 Please wait for a moment, a Data Analyst will come back to you soon.")
+        st.write(f"🎫 Your Ticket Number: **{ticket_number}**")
 
         # Reset confirmation state
         st.session_state.confirm_submission = False
@@ -123,3 +117,6 @@ if st.session_state.confirm_submission:
     elif cancel:
         st.warning("Submission cancelled. You can modify the details before submitting again.")
         st.session_state.confirm_submission = False
+
+# Close database connection
+conn.close()
