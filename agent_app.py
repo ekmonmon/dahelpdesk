@@ -103,7 +103,7 @@ if st.session_state.confirm_submission:
         }
         response = supabase.table("tickets").insert(data).execute()
         
-        if response not None:
+        if response is not None:
             st.success("✅ Ticket Submitted!")
             st.write("📌 Please wait for a moment, a Data Analyst will come back to you soon.")
             st.write(f"🎫 Your Ticket Number: **{ticket_number}**")
