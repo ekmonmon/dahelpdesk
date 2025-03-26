@@ -96,7 +96,7 @@ if st.session_state.confirm_submission:
             "submission_time": submission_time
         }
         
-        response = supabase.table("tickets").insert(data).execute()
+        response = supabase.table("new_tickets").insert(data).execute()
         if response:
             st.success("✅ Ticket Submitted!")
             st.write("📌 Please wait for a moment, a Data Analyst will come back to you soon.")
