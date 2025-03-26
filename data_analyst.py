@@ -6,8 +6,8 @@ import os
 from supabase import create_client, Client
 
 # Supabase Credentials
-SUPABASE_URL = "https://zqycetikgrqgzbzrxzok.supabase.co"  # Replace with your Supabase URL
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxeWNldGlrZ3JxZ3pienJ4em9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NTMzOTMsImV4cCI6MjA1ODUyOTM5M30.uNYXbCjTJJS2spGuq4EMPdUxAcQGeekEwAG2AGb1Yt4"  # Replace with your Supabase Key
+SUPABASE_URL = "https://zqycetikgrqgzbzrxzok.supabase.co"  # Replace with your actual Supabase URL
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxeWNldGlrZ3JxZ3pienJ4em9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NTMzOTMsImV4cCI6MjA1ODUyOTM5M30.uNYXbCjTJJS2spGuq4EMPdUxAcQGeekEwAG2AGb1Yt4"  # Replace with your actual Supabase key
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Set page title and layout
@@ -18,10 +18,7 @@ st.title("📊 Data Analyst Helpdesk")
 @st.cache_data(ttl=60)
 def load_tickets():
     response = supabase.table("tickets").select("*").execute()
-    if response.data:
-        return pd.DataFrame(response.data)
-    else:
-        return pd.DataFrame()
+    return pd.DataFrame(response.data) if response.data else pd.DataFrame()
 
 df = load_tickets()
 
@@ -30,7 +27,7 @@ if df.empty:
     st.warning("⚠️ No tickets found in the database.")
     st.stop()
 
-# Sidebar filters
+# Sidebar for filtering
 st.sidebar.title("🎯 Ticket Filters")
 
 impact_options = ["ALL", "Campaign", "Data Analyst"]
@@ -104,12 +101,12 @@ for _, ticket in filtered_df.iterrows():
     with st.expander(f"🔹 Ticket #{ticket_number} - {request_type} ({get_status_color(ticket['status'])})"):
         st.write(f"**Priority:** {priority}")
         st.write(f"**Date Submitted:** {submission_time}")
-        st.write(f"**Last Updated:** {updated_at}")
         st.write(f"**Description:** {description}")
+        st.write(f"**Last Updated:** {updated_at}")
 
-        # Attachment Download
+        # Attachment Download (from Supabase storage)
         if attachment_path:
-            file_url = f"https://supabase.com/dashboard/project/zqycetikgrqgzbzrxzok/storage/buckets/attachments{attachment_path}"  # Replace with your actual Supabase storage URL
+            file_url = f"https://your-supabase-bucket-url/{attachment_path}"  # Replace with actual Supabase storage URL
             st.markdown(f"[📎 Download Attachment]({file_url})", unsafe_allow_html=True)
 
         # Status Update
@@ -130,4 +127,3 @@ for _, ticket in filtered_df.iterrows():
                 st.rerun()
             else:
                 st.error(f"❌ Error updating ticket {ticket_number}: {response}")
-
