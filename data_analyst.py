@@ -57,7 +57,7 @@ else:
         ticket_number = ticket["ticket_number"]
         request_type = ticket["request"]
         priority = ticket["priority"]
-        submission_time = ticket["submission_time"]
+        submission_time = ticket["submission_time"].replace("T", " ")
         description = ticket["description"]
         attachment_url = ticket["attachment"]
         
