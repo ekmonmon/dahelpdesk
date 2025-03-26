@@ -5,6 +5,7 @@ import plotly.express as px
 from datetime import datetime
 import os
 
+DB_PATH = "helpdesk.db"
 TEMP_DB_PATH = "/tmp/helpdesk.db"
 
 if not os.path.exists(TEMP_DB_PATH):
