@@ -3,8 +3,15 @@ import sqlite3
 import datetime
 import os
 
-# Database connection
-conn = sqlite3.connect("helpdesk.db", check_same_thread=False)
+DB_PATH = "helpdesk.db"
+TEMP_DB_PATH = "/tmp/helpdesk.db"
+
+if not os.path.exists(TEMP_DB_PATH):
+    import shutil
+    shutil.copy(DB_PATH, TEMP_DB_PATH)  # Copy to /tmp/
+
+conn = sqlite3.connect(TEMP_DB_PATH, check_same_thread=False)
+
 cursor = conn.cursor()
 
 # Ensure the tickets table has the correct schema
