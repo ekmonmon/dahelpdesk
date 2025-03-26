@@ -102,15 +102,14 @@ if st.session_state.confirm_submission:
             "submission_time": submission_time,
         }
         response = supabase.table("tickets").insert(data).execute()
-        st.write(response)
         
-        # if response.get("status_code", 200) < 300:
-        #     st.success("✅ Ticket Submitted!")
-        #     st.write("📌 Please wait for a moment, a Data Analyst will come back to you soon.")
-        #     st.write(f"🎫 Your Ticket Number: **{ticket_number}**")
-        # else:
-        #     st.error("❌ Error submitting ticket. Please try again.")
-        #     st.write(response)
+        if response not None:
+            st.success("✅ Ticket Submitted!")
+            st.write("📌 Please wait for a moment, a Data Analyst will come back to you soon.")
+            st.write(f"🎫 Your Ticket Number: **{ticket_number}**")
+        else:
+            st.error("❌ Error submitting ticket. Please try again.")
+            st.write(response)
         
         st.session_state.confirm_submission = False
     elif cancel:
