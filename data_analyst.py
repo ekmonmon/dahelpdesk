@@ -23,9 +23,17 @@ df = fetch_tickets()
 
 # Listen for realtime updates
 def handle_update(payload):
+    # When an update is received, force the page to rerun
     st.experimental_rerun()
 
-supabase.table("tickets").on("UPDATE", handle_update).subscribe()
+# Create a realtime channel and register for UPDATE events on the "tickets" table
+channel = supabase.channel("database")
+channel.on_postgres_changes(
+    "INSERT",
+    schema="public",
+    table="tickets",
+    callback=handle_update
+).subscribe()
 
 # Ensure the DataFrame is not empty
 if df.empty:
@@ -111,6 +119,8 @@ else:
             # Allow status update within expander
             new_status = st.selectbox("🔄 Update Status:", ["Open", "In Progress", "Resolved", "Closed"], key=f"status_{ticket_number}")
             if st.button(f"✅ Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
-                supabase.table("tickets").update({"status": new_status, "updated_at": datetime.now().isoformat()}).match({"ticket_number": ticket_number}).execute()
+                supabase.table("tickets").update(
+                    {"status": new_status, "updated_at": datetime.now().isoformat()}
+                ).match({"ticket_number": ticket_number}).execute()
                 st.success(f"Ticket {ticket_number} updated to '{new_status}'")
-                st.rerun()  # Auto-refresh the page
+                st.rerun()
