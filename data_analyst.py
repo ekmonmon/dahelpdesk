@@ -1,30 +1,21 @@
-import sqlite3
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 from datetime import datetime
-import os
+from supabase import create_client
 
-DB_PATH = "helpdesk.db"
-TEMP_DB_PATH = "/tmp/helpdesk.db"
-
-if not os.path.exists(TEMP_DB_PATH):
-    import shutil
-    shutil.copy(DB_PATH, TEMP_DB_PATH)  # Copy to /tmp/
-
-conn = sqlite3.connect(TEMP_DB_PATH, check_same_thread=False)
-
+# Supabase credentials
+SUPABASE_URL = "https://zqycetikgrqgzbzrxzok.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxeWNldGlrZ3JxZ3pienJ4em9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NTMzOTMsImV4cCI6MjA1ODUyOTM5M30.uNYXbCjTJJS2spGuq4EMPdUxAcQGeekEwAG2AGb1Yt4"
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Set page title and layout
 st.set_page_config(page_title="Data Analyst Helpdesk", page_icon="📊", layout="wide")
-
 st.title("📊 Data Analyst Helpdesk")
 
-cursor = conn.cursor()
-
 # Load tickets into a DataFrame
-query = "SELECT * FROM tickets"
-df = pd.read_sql(query, conn)
+response = supabase.table("tickets").select("*").execute()
+df = pd.DataFrame(response.data)
 
 # Ensure the DataFrame is not empty
 if df.empty:
@@ -82,8 +73,7 @@ else:
 
     # Delete all closed tickets button
     if st.button("🗑️ Delete All Closed Tickets"):
-        cursor.execute("DELETE FROM tickets WHERE status = 'Closed'")
-        conn.commit()
+        supabase.table("tickets").delete().match({"status": "Closed"}).execute()
         st.success("All closed tickets have been deleted!")
         st.rerun()
 
@@ -96,7 +86,7 @@ else:
         submission_time = ticket.get("submission_time", "N/A")
         description = ticket.get("description", "No description available")
         updated_at = ticket.get("updated_at", "None")
-        attachment_path = ticket.get("attachment", None)  # Get the attachment path
+        attachment_url = ticket.get("attachment", None)  # Assuming file URL stored in DB
 
         with st.expander(f"🔹 Ticket #{ticket_number} - {request_type} ({get_status_color(ticket['status'])})"):
             st.write(f"**Priority:** {priority}")
@@ -104,24 +94,13 @@ else:
             st.write(f"**Description:** {description}")
             st.write(f"**Last Updated:** {updated_at}")
 
-            # Display the download button if there's an attachment
-            if attachment_path and os.path.exists(attachment_path):
-                with open(attachment_path, "rb") as file:
-                    st.download_button(
-                        label="📎 Download Attachment",
-                        data=file,
-                        file_name=os.path.basename(attachment_path),
-                        mime="application/octet-stream",
-                    )
+            # Display download button if there's an attachment URL
+            if attachment_url:
+                st.markdown(f"[📎 Download Attachment]({attachment_url})")
 
             # Allow status update within expander
             new_status = st.selectbox("🔄 Update Status:", ["Open", "In Progress", "Resolved", "Closed"], key=f"status_{ticket_number}")
             if st.button(f"✅ Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
-                cursor.execute("UPDATE tickets SET status = ?, updated_at = ? WHERE ticket_number = ?", 
-                               (new_status, datetime.now(), ticket_number))
-                conn.commit()
+                supabase.table("tickets").update({"status": new_status, "updated_at": datetime.now().isoformat()}).match({"ticket_number": ticket_number}).execute()
                 st.success(f"Ticket {ticket_number} updated to '{new_status}'")
                 st.rerun()  # Auto-refresh the page
-
-# Close DB connection
-conn.close()
