@@ -2,20 +2,30 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from datetime import datetime
-from supabase import create_client
+from supabase import create_client, Client
+import asyncio
 
 # Supabase credentials
 SUPABASE_URL = "https://zqycetikgrqgzbzrxzok.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxeWNldGlrZ3JxZ3pienJ4em9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NTMzOTMsImV4cCI6MjA1ODUyOTM5M30.uNYXbCjTJJS2spGuq4EMPdUxAcQGeekEwAG2AGb1Yt4"
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Set page title and layout
 st.set_page_config(page_title="Data Analyst Helpdesk", page_icon="📊", layout="wide")
 st.title("📊 Data Analyst Helpdesk")
 
-# Load tickets into a DataFrame
-response = supabase.table("tickets").select("*").execute()
-df = pd.DataFrame(response.data)
+# Function to fetch tickets
+def fetch_tickets():
+    response = supabase.table("tickets").select("*").execute()
+    return pd.DataFrame(response.data)
+
+df = fetch_tickets()
+
+# Listen for realtime updates
+def handle_update(payload):
+    st.experimental_rerun()
+
+supabase.table("tickets").on("UPDATE", handle_update).subscribe()
 
 # Ensure the DataFrame is not empty
 if df.empty:
