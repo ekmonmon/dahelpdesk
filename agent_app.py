@@ -4,8 +4,8 @@ import datetime
 import os
 
 # Supabase credentials
-SUPABASE_URL = "https://twyoryuxgvskitkvauyx.supabase.co"  # Replace with your actual URL
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3eW9yeXV4Z3Zza2l0a3ZhdXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5Njc1MDgsImV4cCI6MjA1ODU0MzUwOH0.P9M25ysxrIOpucNaUKQ-UzExO_MbF2ucTGovVU-uILk"  # Replace with your actual API key
+SUPABASE_URL = "https://twyoryuxgvskitkvauyx.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3eW9yeXV4Z3Zza2l0a3ZhdXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5Njc1MDgsImV4cCI6MjA1ODU0MzUwOH0.P9M25ysxrIOpucNaUKQ-UzExO_MbF2ucTGovVU-uILk"
 
 # Initialize Supabase client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -38,18 +38,15 @@ with st.form("ticket_form"):
 
     submit_button = st.form_submit_button("🚀 Submit Ticket")
 
-# When Submit is clicked, trigger confirmation pop-up
 if submit_button:
     if not lark_email or not campaign or not request or not description:
         st.error("⚠️ Please fill in all required fields.")
     else:
-        # Show the confirmation dialog
         st.session_state.confirm_submission = True
 
 # Show confirmation pop-up
 if st.session_state.confirm_submission:
     st.warning("⚠️ Please confirm your submission before proceeding:")
-
     st.write(f"📧 **Lark Email:** {lark_email}")
     st.write(f"📢 **Campaign:** {campaign}")
     st.write(f"❌ **Impact:** {impact}")
@@ -60,30 +57,19 @@ if st.session_state.confirm_submission:
     confirm = st.button("✅ Confirm Submission")
     cancel = st.button("❌ Cancel")
 
-    # If user confirms, process the submission
     if confirm:
         # Generate a unique ticket number
         ticket_number = f"DAH-{datetime.datetime.now().strftime('%H%M%S')}"
 
-        # Save file if uploaded
+        # Upload file if provided
         attachment_url = None
         if attachment:
-            attachment_dir = "attachments"
-            os.makedirs(attachment_dir, exist_ok=True)
-
-            # Avoid duplicate file names
-            timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-            filename = f"{timestamp}_{attachment.name}"
-            attachment_path = os.path.join(attachment_dir, filename)
-
-            with open(attachment_path, "wb") as f:
-                f.write(attachment.getbuffer())
-
-            # Upload to Supabase Storage
-            with open(attachment_path, "rb") as f:
-                res = supabase.storage.from_("ticket_attachments").upload(f"uploads/{filename}", f)
-                if res:
-                    attachment_url = f"{SUPABASE_URL}/storage/v1/object/public/ticket_attachments/uploads/{filename}"
+            file_content = attachment.read()
+            file_name = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{attachment.name}"
+            
+            response = supabase.storage.from_("attachments").upload(file_name, file_content, content_type=attachment.type)
+            if response:
+                attachment_url = f"{SUPABASE_URL}/storage/v1/object/public/attachments/{file_name}"
 
         # Get submission time
         submission_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -101,11 +87,11 @@ if st.session_state.confirm_submission:
             "status": "Open",
             "submission_time": submission_time
         }
-        supabase.table("tickets").insert(ticket_data).execute()
 
-        st.success("✅ Ticket Submitted!")
-        st.write("📌 Please wait for a moment, a Data Analyst will come back to you soon.")
-        st.write(f"🎫 Your Ticket Number: **{ticket_number}**")
+        response = supabase.table("tickets").insert(ticket_data).execute()
+        if response:
+            st.success("✅ Ticket Submitted!")
+            st.write(f"🎫 Your Ticket Number: **{ticket_number}**")
 
         # Reset confirmation state
         st.session_state.confirm_submission = False
