@@ -5,13 +5,20 @@ import plotly.express as px
 from datetime import datetime
 import os
 
+TEMP_DB_PATH = "/tmp/helpdesk.db"
+
+if not os.path.exists(TEMP_DB_PATH):
+    import shutil
+    shutil.copy(DB_PATH, TEMP_DB_PATH)  # Copy to /tmp/
+
+conn = sqlite3.connect(TEMP_DB_PATH, check_same_thread=False)
+
+
 # Set page title and layout
 st.set_page_config(page_title="Data Analyst Helpdesk", page_icon="📊", layout="wide")
 
 st.title("📊 Data Analyst Helpdesk")
 
-# Connect to the SQLite database
-conn = sqlite3.connect("helpdesk.db", check_same_thread=False)
 cursor = conn.cursor()
 
 # Load tickets into a DataFrame
