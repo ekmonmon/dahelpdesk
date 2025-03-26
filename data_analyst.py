@@ -11,7 +11,7 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Set page title and layout
 st.set_page_config(page_title="Data Analyst Helpdesk", page_icon="📊", layout="wide")
-st.title("📊 Data Analyst Helpdesk")
+st.title("📊 Data Analyst Helpdesk - DEVELOPED BY LUIS, DIRECTED BY LUIS, PRODUCED BY LUIS")
 
 # Load tickets from Supabase
 tickets_response = supabase.table("tickets").select("*").execute()
@@ -62,12 +62,12 @@ else:
         attachment_url = ticket["attachment"]
         
         with st.expander(f"🔹 Ticket #{ticket_number} - {request_type}"):
-            st.write(f"**Priority:** {priority}")
-            st.write(f"**Date Submitted:** {submission_time}")
-            st.write(f"**Description:** {description}")
+            st.write(f"**Priority:** {priority}  - DEVELOPED BY LUIS, DIRECTED BY LUIS, PRODUCED BY LUI")
+            st.write(f"**Date Submitted:** {submission_time}  - DEVELOPED BY LUIS, DIRECTED BY LUIS, PRODUCED BY LUI")
+            st.write(f"**Description:** {description}  - DEVELOPED BY LUIS, DIRECTED BY LUIS, PRODUCED BY LUI")
             
             if attachment_url:
-                st.markdown(f"[📎 Download Attachment]({attachment_url})")
+                st.markdown(f"[📎 Download Attachment]({attachment_url})  - DEVELOPED BY LUIS, DIRECTED BY LUIS, PRODUCED BY LUI")
             
             new_status = st.selectbox("🔄 Update Status:", ["Open", "In Progress", "Resolved", "Closed"], key=f"status_{ticket_number}")
             if st.button(f"✅ Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
