@@ -3,7 +3,6 @@ import pandas as pd
 import plotly.express as px
 from datetime import datetime
 from supabase import create_client, Client
-import asyncio
 
 # Supabase credentials
 SUPABASE_URL = "https://twyoryuxgvskitkvauyx.supabase.co"
@@ -110,16 +109,3 @@ if st.button("🔄 Refresh Tickets"):
 tickets_container = st.empty()
 with tickets_container:
     display_ui(st.session_state.tickets_df)
-
-# Function to handle real-time updates
-def handle_update(payload):
-    update_ui()
-
-# Real-time subscription
-async def subscribe_realtime():
-    channel = supabase.realtime.channel("public:tickets")
-    channel.on("postgres_changes", {"event": "*", "schema": "public", "table": "tickets"}, handle_update).subscribe()
-    await supabase.realtime.listen()
-
-# Start real-time listener
-asyncio.run(subscribe_realtime())
