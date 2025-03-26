@@ -4,7 +4,6 @@ import plotly.express as px
 from datetime import datetime
 from supabase import create_client, Client
 import asyncio
-import threading
 
 # Supabase credentials
 SUPABASE_URL = "https://twyoryuxgvskitkvauyx.supabase.co"
@@ -20,61 +19,43 @@ def fetch_tickets():
     response = supabase.table("tickets").select("*").execute()
     return pd.DataFrame(response.data)
 
-# Create a placeholder to hold the UI that displays tickets
-tickets_container = st.empty()
-
 # Initialize session state with tickets data if not already set
 if "tickets_df" not in st.session_state:
     st.session_state.tickets_df = fetch_tickets()
 
-# Define a function that renders the main UI using a provided DataFrame
+# Function to display the UI
 def display_ui(df: pd.DataFrame):
     if df.empty:
         st.warning("No tickets found in the database.")
         return
 
-    # Sidebar for filtering
+    # Sidebar filters
     st.sidebar.title("🎯 Ticket Filters")
-    impact_options = ["ALL", "Campaign", "Data Analyst"]
-    impact_filter = st.sidebar.selectbox("🏢 Filter by Impact:", impact_options, index=0)
-    
-    request_options = ["ALL"] + (df["request"].unique().tolist() if "request" in df.columns else [])
-    request_filter = st.sidebar.selectbox("📜 Filter by Request Type:", request_options, index=0)
-    
-    status_options = ["ALL"] + df["status"].unique().tolist()
-    status_filter = st.sidebar.selectbox("📌 Filter by Status:", status_options, index=0)
-    
-    priority_options = ["ALL"] + (df["priority"].unique().tolist() if "priority" in df.columns else [])
-    priority_filter = st.sidebar.selectbox("🚀 Filter by Priority:", priority_options, index=0)
+    impact_filter = st.sidebar.selectbox("🏢 Filter by Impact:", ["ALL", "Campaign", "Data Analyst"], index=0)
+    request_filter = st.sidebar.selectbox("📜 Filter by Request Type:", ["ALL"] + df["request"].dropna().unique().tolist(), index=0)
+    status_filter = st.sidebar.selectbox("📌 Filter by Status:", ["ALL"] + df["status"].dropna().unique().tolist(), index=0)
+    priority_filter = st.sidebar.selectbox("🚀 Filter by Priority:", ["ALL"] + df["priority"].dropna().unique().tolist(), index=0)
 
     # Apply filters
     filtered_df = df.copy()
     if impact_filter != "ALL":
         filtered_df = filtered_df[filtered_df["impact"] == impact_filter]
-    if request_filter != "ALL" and "request" in df.columns:
+    if request_filter != "ALL":
         filtered_df = filtered_df[filtered_df["request"] == request_filter]
     if status_filter != "ALL":
         filtered_df = filtered_df[filtered_df["status"] == status_filter]
-    if priority_filter != "ALL" and "priority" in df.columns:
+    if priority_filter != "ALL":
         filtered_df = filtered_df[filtered_df["priority"] == priority_filter]
 
-    # Status color mapping
-    def get_status_color(status):
-        colors = {"Open": "🔴 Open", "In Progress": "🟠 In Progress", "Resolved": "🟢 Resolved", "Closed": "⚫ Closed"}
-        return colors.get(status, "⚪ Unknown")
-
-    # Ticket Overview Pie Chart with Count Summary
+    # Status Pie Chart
     st.subheader("📊 Ticket Status Overview")
     status_counts = df["status"].value_counts().reset_index()
     status_counts.columns = ["Status", "Count"]
     
     col1, col2 = st.columns([2, 1])
-    
     with col1:
-        fig = px.pie(status_counts, names="Status", values="Count", title="Ticket Status Distribution", 
-                     color_discrete_sequence=["#636EFA", "#EF553B", "#00CC96", "#AB63FA"],
-                     hole=0.4)
-        fig.update_traces(textinfo='percent+label', pull=[0.1 if x == "Open" else 0 for x in status_counts["Status"]])
+        fig = px.pie(status_counts, names="Status", values="Count", title="Ticket Status Distribution",
+                     color_discrete_sequence=["#636EFA", "#EF553B", "#00CC96", "#AB63FA"], hole=0.4)
         st.plotly_chart(fig)
     
     with col2:
@@ -82,11 +63,10 @@ def display_ui(df: pd.DataFrame):
         for index, row in status_counts.iterrows():
             st.write(f"**{row['Status']}:** {row['Count']}")
 
-    # Button to delete all closed tickets
+    # Delete closed tickets button
     if st.button("🗑️ Delete All Closed Tickets"):
         supabase.table("tickets").delete().match({"status": "Closed"}).execute()
-        st.success("All closed tickets have been deleted!")
-        # Update the tickets data without rerunning the app
+        st.success("All closed tickets deleted!")
         update_ui()
 
     # Ticket list
@@ -98,59 +78,48 @@ def display_ui(df: pd.DataFrame):
         submission_time = ticket.get("submission_time", "N/A")
         description = ticket.get("description", "No description available")
         updated_at = ticket.get("updated_at", "None")
-        attachment_url = ticket.get("attachment", None)  # Assuming file URL stored in DB
+        attachment_url = ticket.get("attachment", None)
 
-        with st.expander(f"🔹 Ticket #{ticket_number} - {request_type} ({get_status_color(ticket['status'])})"):
+        with st.expander(f"🔹 Ticket #{ticket_number} - {request_type} ({ticket['status']})"):
             st.write(f"**Priority:** {priority}")
             st.write(f"**Date Submitted:** {submission_time}")
             st.write(f"**Description:** {description}")
             st.write(f"**Last Updated:** {updated_at}")
 
-            # Display download button if there's an attachment URL
             if attachment_url:
                 st.markdown(f"[📎 Download Attachment]({attachment_url})")
 
-            # Allow status update within expander
             new_status = st.selectbox("🔄 Update Status:", ["Open", "In Progress", "Resolved", "Closed"], key=f"status_{ticket_number}")
             if st.button(f"✅ Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
-                supabase.table("tickets").update(
-                    {"status": new_status, "updated_at": datetime.now().isoformat()}
-                ).match({"ticket_number": ticket_number}).execute()
+                supabase.table("tickets").update({"status": new_status, "updated_at": datetime.now().isoformat()}).match({"ticket_number": ticket_number}).execute()
                 st.success(f"Ticket {ticket_number} updated to '{new_status}'")
                 update_ui()
 
-# Define a function to refresh tickets and update the UI container
+# Function to update tickets UI
 def update_ui():
-    new_df = fetch_tickets()
-    st.session_state.tickets_df = new_df
+    st.session_state.tickets_df = fetch_tickets()
     tickets_container.empty()
     with tickets_container:
-        display_ui(new_df)
+        display_ui(st.session_state.tickets_df)
 
-# Initially render the UI using the stored tickets data
+# Add a manual refresh button
+if st.button("🔄 Refresh Tickets"):
+    update_ui()
+
+# Create a placeholder for UI updates
+tickets_container = st.empty()
 with tickets_container:
     display_ui(st.session_state.tickets_df)
 
-# Define the realtime update callback (without calling rerun)
+# Function to handle real-time updates
 def handle_update(payload):
-    # On receiving a realtime event, update only the ticket UI
     update_ui()
 
-# Asynchronous function to subscribe to realtime updates
+# Real-time subscription
 async def subscribe_realtime():
-    channel = supabase.realtime.channel("database")
-    channel.on_postgres_changes(
-        "INSERT",
-        schema="public",
-        table="tickets",
-        callback=handle_update
-    ).subscribe()
+    channel = supabase.realtime.channel("public:tickets")
+    channel.on("postgres_changes", {"event": "*", "schema": "public", "table": "tickets"}, handle_update).subscribe()
     await supabase.realtime.listen()
 
-# Run the asynchronous realtime listener in a background thread
-def run_asyncio_loop(loop):
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(subscribe_realtime())
-
-new_loop = asyncio.new_event_loop()
-threading.Thread(target=run_asyncio_loop, args=(new_loop,), daemon=True).start()
+# Start real-time listener
+asyncio.run(subscribe_realtime())
