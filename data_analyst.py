@@ -4,6 +4,7 @@ import plotly.express as px
 from datetime import datetime
 from supabase import create_client, Client
 import asyncio
+import threading
 
 # Supabase credentials
 SUPABASE_URL = "https://zqycetikgrqgzbzrxzok.supabase.co"
@@ -21,21 +22,35 @@ def fetch_tickets():
 
 df = fetch_tickets()
 
-# Listen for realtime updates
+# Define the update handler
 def handle_update(payload):
-    # When an update is received, force the page to rerun
+    # When an update is received, trigger a rerun of the Streamlit app
     st.experimental_rerun()
 
-# Create a realtime channel and register for UPDATE events on the "tickets" table
-channel = supabase.channel("database")
-channel.on_postgres_changes(
-    "INSERT",
-    schema="public",
-    table="tickets",
-    callback=handle_update
-).subscribe()
+# Asynchronous function to subscribe to realtime updates
+async def subscribe_realtime():
+    # Create a realtime channel asynchronously
+    channel = supabase.realtime.channel("tickets-channel")
+    channel.on_postgres_changes(
+        "INSERT",
+        schema="public",
+        table="tickets",
+        callback=handle_update
+    ).subscribe()
+    # Listen for realtime events (this call will block)
+    await supabase.realtime.listen()
 
-# Ensure the DataFrame is not empty
+# Run the asynchronous realtime listener in a background thread
+def run_asyncio_loop(loop):
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(subscribe_realtime())
+
+# Create a new event loop and start it in a daemon thread
+new_loop = asyncio.new_event_loop()
+threading.Thread(target=run_asyncio_loop, args=(new_loop,), daemon=True).start()
+
+# --- Rest of your Streamlit app code below ---
+
 if df.empty:
     st.warning("No tickets found in the database.")
 else:
