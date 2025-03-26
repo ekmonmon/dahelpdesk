@@ -24,54 +24,12 @@ except Exception as e:
     st.error(f"❌ Failed to load tickets: {str(e)}")
     st.stop()
 
-# Sidebar Filters
-st.sidebar.title("🎯 Ticket Filters")
-
-def get_unique_values(column):
-    """Returns unique values of a column or an empty list if the column is missing."""
-    return ["ALL"] + df[column].dropna().unique().tolist() if column in df else ["ALL"]
-
-impact_filter = st.sidebar.selectbox("🏢 Filter by Impact:", get_unique_values("impact"))
-request_filter = st.sidebar.selectbox("📜 Filter by Request Type:", get_unique_values("request"))
-status_filter = st.sidebar.selectbox("📌 Filter by Status:", get_unique_values("status"))
-priority_filter = st.sidebar.selectbox("🚀 Filter by Priority:", get_unique_values("priority"))
-
-# Apply filters
-filtered_df = df.copy()
-if impact_filter != "ALL":
-    filtered_df = filtered_df[filtered_df["impact"] == impact_filter]
-if request_filter != "ALL":
-    filtered_df = filtered_df[filtered_df["request"] == request_filter]
-if status_filter != "ALL":
-    filtered_df = filtered_df[filtered_df["status"] == status_filter]
-if priority_filter != "ALL":
-    filtered_df = filtered_df[filtered_df["priority"] == priority_filter]
-
-# Ticket Overview Pie Chart
-st.subheader("📊 Ticket Status Overview")
-if "status" in df.columns and not df.empty:
-    status_counts = df["status"].value_counts().reset_index()
-    status_counts.columns = ["Status", "Count"]
-    fig = px.pie(status_counts, names="Status", values="Count", title="Ticket Status Distribution", hole=0.4)
-    st.plotly_chart(fig)
-else:
-    st.warning("⚠️ No status data available for visualization.")
-
-# Delete all closed tickets
-if st.button("🗑️ Delete All Closed Tickets"):
-    try:
-        delete_response = supabase.table("tickets").delete().eq("status", "Closed").execute()
-        if delete_response.data:
-            st.success("✅ All closed tickets have been deleted!")
-            st.rerun()
-        else:
-            st.warning("⚠️ No closed tickets found to delete.")
-    except Exception as e:
-        st.error(f"❌ Failed to delete closed tickets: {str(e)}")
+# Check if 'updated_at' column exists
+updated_at_exists = "updated_at" in df.columns
 
 # Ticket List
 st.subheader("📋 Ticket List")
-for _, ticket in filtered_df.iterrows():
+for _, ticket in df.iterrows():
     ticket_number = ticket.get("ticket_number", "N/A")
     request_type = ticket.get("request", "Unknown")
     priority = ticket.get("priority", "Unknown")
@@ -98,10 +56,13 @@ for _, ticket in filtered_df.iterrows():
 
         if st.button(f"✅ Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
             try:
-                update_response = supabase.table("tickets").update({
-                    "status": new_status,
-                    "updated_at": datetime.now().isoformat(),
-                }).eq("ticket_number", ticket_number).execute()
+                # Prepare the update data
+                update_data = {"status": new_status}
+                if updated_at_exists:
+                    update_data["updated_at"] = datetime.now().isoformat()
+
+                # Execute update query
+                update_response = supabase.table("tickets").update(update_data).eq("ticket_number", ticket_number).execute()
 
                 if update_response.data:
                     st.success(f"✅ Ticket {ticket_number} updated to '{new_status}'")
