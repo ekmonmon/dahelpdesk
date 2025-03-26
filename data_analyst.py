@@ -18,29 +18,31 @@ st.set_page_config(page_title="Data Analyst Helpdesk", page_icon="📊", layout=
 st.title("📊 Data Analyst Helpdesk")
 
 # Load tickets into a DataFrame
-response = supabase.table("tickets").select("*").execute()
-if response.error:
-    st.error(f"❌ Error loading tickets: {response.error}")
+try:
+    response = supabase.table("tickets").select("*").execute()
+    if not response.data:  # Check if data is empty
+        st.warning("No tickets found in the database.")
+        df = pd.DataFrame()  # Create empty DataFrame
+    else:
+        df = pd.DataFrame(response.data)
+except Exception as e:
+    st.error(f"❌ Error loading tickets: {e}")
     st.stop()
 
-df = pd.DataFrame(response.data)
-
 # Ensure the DataFrame is not empty
-if df.empty:
-    st.warning("No tickets found in the database.")
-else:
+if not df.empty:
     # Sidebar for filtering
     st.sidebar.title("🎯 Ticket Filters")
 
     impact_options = ["ALL", "Campaign", "Data Analyst"]
     impact_filter = st.sidebar.selectbox("🏢 Filter by Impact:", impact_options, index=0)
-    
+
     request_options = ["ALL"] + df["request"].dropna().unique().tolist()
     request_filter = st.sidebar.selectbox("📜 Filter by Request Type:", request_options, index=0)
-    
+
     status_options = ["ALL"] + df["status"].dropna().unique().tolist()
     status_filter = st.sidebar.selectbox("📌 Filter by Status:", status_options, index=0)
-    
+
     priority_options = ["ALL"] + df["priority"].dropna().unique().tolist()
     priority_filter = st.sidebar.selectbox("🚀 Filter by Priority:", priority_options, index=0)
 
@@ -73,7 +75,7 @@ else:
                      hole=0.4)
         fig.update_traces(textinfo='percent+label', pull=[0.1 if x == "Open" else 0 for x in status_counts["Status"]])
         st.plotly_chart(fig)
-    
+
     with col2:
         st.markdown("### Ticket Summary")
         for _, row in status_counts.iterrows():
@@ -81,12 +83,12 @@ else:
 
     # Delete all closed tickets button
     if st.button("🗑️ Delete All Closed Tickets"):
-        delete_response = supabase.table("tickets").delete().eq("status", "Closed").execute()
-        if delete_response.error:
-            st.error(f"❌ Failed to delete closed tickets: {delete_response.error}")
-        else:
+        try:
+            delete_response = supabase.table("tickets").delete().eq("status", "Closed").execute()
             st.success("All closed tickets have been deleted!")
             st.rerun()
+        except Exception as e:
+            st.error(f"❌ Failed to delete closed tickets: {e}")
 
     # Ticket list
     st.subheader("📋 Ticket List")
@@ -119,18 +121,18 @@ else:
             new_status = st.selectbox("🔄 Update Status:", ["Open", "In Progress", "Resolved", "Closed"], key=f"status_{ticket_number}")
             
             if st.button(f"✅ Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
-                # Check if ticket exists before updating
-                ticket_exists = supabase.table("tickets").select("ticket_number").eq("ticket_number", ticket_number).execute()
-                
-                if len(ticket_exists.data) == 0:
-                    st.error(f"❌ Ticket {ticket_number} not found!")
-                else:
-                    update_response = supabase.table("tickets").update(
-                        {"status": new_status, "updated_at": datetime.utcnow().isoformat()}
-                    ).eq("ticket_number", ticket_number).execute()
+                try:
+                    # Check if ticket exists before updating
+                    ticket_exists = supabase.table("tickets").select("ticket_number").eq("ticket_number", ticket_number).execute()
                     
-                    if update_response.error:
-                        st.error(f"❌ Failed to update ticket: {update_response.error}")
+                    if not ticket_exists.data:
+                        st.error(f"❌ Ticket {ticket_number} not found!")
                     else:
+                        update_response = supabase.table("tickets").update(
+                            {"status": new_status, "updated_at": datetime.utcnow().isoformat()}
+                        ).eq("ticket_number", ticket_number).execute()
+                        
                         st.success(f"Ticket {ticket_number} updated to '{new_status}'")
                         st.rerun()  # Auto-refresh the page
+                except Exception as e:
+                    st.error(f"❌ Failed to update ticket: {e}")
