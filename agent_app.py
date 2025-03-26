@@ -1,14 +1,15 @@
 import streamlit as st
+from supabase import create_client, Client
 import datetime
 import os
-from supabase import create_client, Client
+import uuid
 
-# Supabase configuration
+# Supabase credentials
 SUPABASE_URL = "https://zqycetikgrqgzbzrxzok.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxeWNldGlrZ3JxZ3pienJ4em9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NTMzOTMsImV4cCI6MjA1ODUyOTM5M30.uNYXbCjTJJS2spGuq4EMPdUxAcQGeekEwAG2AGb1Yt4"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Initialize session state
+# Initialize session state for confirmation pop-up
 if "confirm_submission" not in st.session_state:
     st.session_state.confirm_submission = False
 
@@ -17,16 +18,23 @@ st.title("🎫 Agent Helpdesk - Submit a Ticket")
 # Form for submitting a ticket
 with st.form("ticket_form"):
     st.subheader("📝 Submit a Ticket")
+    
     lark_email = st.text_input("📧 Lark Email:")
     campaign = st.text_input("📢 Campaign:")
+    
     impact = st.selectbox("❌ Impact:", ["Data Analyst", "Campaign"])
+    
     request = st.selectbox("🛠 Request Type:", [
         "Data Extraction", "Report Issue", "New Report Request",
         "Dashboard Update", "System Issue", "Other"
     ])
+    
     description = st.text_area("🗒 Description:")
+    
     priority = st.selectbox("⚡ Priority:", ["Critical", "High", "Medium", "Low"])
+    
     attachment = st.file_uploader("📎 Attachment (if any):", type=["png", "jpg", "pdf", "csv", "xlsx", "txt"])
+    
     submit_button = st.form_submit_button("🚀 Submit Ticket")
 
 # When Submit is clicked, trigger confirmation pop-up
@@ -39,6 +47,7 @@ if submit_button:
 # Show confirmation pop-up
 if st.session_state.confirm_submission:
     st.warning("⚠️ Please confirm your submission before proceeding:")
+    
     st.write(f"📧 **Lark Email:** {lark_email}")
     st.write(f"📢 **Campaign:** {campaign}")
     st.write(f"❌ **Impact:** {impact}")
@@ -48,47 +57,55 @@ if st.session_state.confirm_submission:
     
     confirm = st.button("✅ Confirm Submission")
     cancel = st.button("❌ Cancel")
-    
+
     if confirm:
         ticket_number = f"DAH-{datetime.datetime.now().strftime('%H%M%S')}"
+        
         attachment_url = None
-
         if attachment:
             attachment_dir = "attachments"
             os.makedirs(attachment_dir, exist_ok=True)
+            
             timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
             filename = f"{timestamp}_{attachment.name}"
             attachment_path = os.path.join(attachment_dir, filename)
+            
             with open(attachment_path, "wb") as f:
                 f.write(attachment.getbuffer())
-            attachment_url = attachment_path  # Modify this to store in cloud storage if needed
-
-        submission_time = datetime.datetime.now().isoformat()
-
-        try:
-            response = supabase.table("tickets").insert({
-                "ticket_number": ticket_number,
-                "lark_email": lark_email,
-                "campaign": campaign,
-                "impact": impact,
-                "request": request,
-                "description": description,
-                "priority": priority,
-                "attachment": attachment_url,
-                "status": "Open",
-                "submission_time": submission_time
-            }).execute()
-
-            if hasattr(response, "data") and response.data:
-                st.success("✅ Ticket Submitted!")
-                st.write("📌 Please wait for a moment, a Data Analyst will come back to you soon.")
-                st.write(f"🎫 Your Ticket Number: **{ticket_number}**")
-            else:
-                st.error(f"❌ Failed to submit ticket. Error: {response}")
-        except Exception as e:
-            st.error(f"❌ Failed to submit ticket. Exception: {str(e)}")
-
+            
+            st.write(f"✅ File saved at: {attachment_path}")
+            
+            # Upload to Supabase Storage
+            with open(attachment_path, "rb") as f:
+                res = supabase.storage.from_('attachments').upload(f"{uuid.uuid4()}_{attachment.name}", f)
+                if res:
+                    attachment_url = f"{SUPABASE_URL}/storage/v1/object/public/attachments/{res}"  
+        
+        submission_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        data = {
+            "ticket_number": ticket_number,
+            "lark_email": lark_email,
+            "campaign": campaign,
+            "impact": impact,
+            "request": request,
+            "description": description,
+            "priority": priority,
+            "attachment": attachment_url,
+            "status": "Open",
+            "submission_time": submission_time
+        }
+        
+        response = supabase.table("tickets").insert(data).execute()
+        if response:
+            st.success("✅ Ticket Submitted!")
+            st.write("📌 Please wait for a moment, a Data Analyst will come back to you soon.")
+            st.write(f"🎫 Your Ticket Number: **{ticket_number}**")
+        else:
+            st.error("❌ Failed to submit the ticket. Please try again.")
+        
         st.session_state.confirm_submission = False
+    
     elif cancel:
         st.warning("Submission cancelled. You can modify the details before submitting again.")
         st.session_state.confirm_submission = False
