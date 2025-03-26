@@ -6,8 +6,8 @@ import os
 from supabase import create_client, Client
 
 # Supabase credentials
-SUPABASE_URL = "https://zqycetikgrqgzbzrxzok.supabase.co"  # Replace with your actual Supabase URL
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxeWNldGlrZ3JxZ3pienJ4em9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NTMzOTMsImV4cCI6MjA1ODUyOTM5M30.uNYXbCjTJJS2spGuq4EMPdUxAcQGeekEwAG2AGb1Yt4"  # Replace with your actual Supabase Anon Key
+SUPABASE_URL = "https://zqycetikgrqgzbzrxzok.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxeWNldGlrZ3JxZ3pienJ4em9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NTMzOTMsImV4cCI6MjA1ODUyOTM5M30.uNYXbCjTJJS2spGuq4EMPdUxAcQGeekEwAG2AGb1Yt4"
 
 # Initialize Supabase client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -17,15 +17,13 @@ st.set_page_config(page_title="Data Analyst Helpdesk", page_icon="📊", layout=
 
 st.title("📊 Data Analyst Helpdesk")
 
-# Load tickets from Supabase
-@st.cache_data(ttl=60)  # Cache for 60 seconds to optimize performance
-def load_tickets():
-    response = supabase.table("tickets").select("*").execute()
-    if response.data:
-        return pd.DataFrame(response.data)
-    return pd.DataFrame()  # Return empty DataFrame if no data
+# Load tickets into a DataFrame
+response = supabase.table("tickets").select("*").execute()
+if response.error:
+    st.error(f"❌ Error loading tickets: {response.error}")
+    st.stop()
 
-df = load_tickets()
+df = pd.DataFrame(response.data)
 
 # Ensure the DataFrame is not empty
 if df.empty:
@@ -34,7 +32,7 @@ else:
     # Sidebar for filtering
     st.sidebar.title("🎯 Ticket Filters")
 
-    impact_options = ["ALL"] + df["impact"].dropna().unique().tolist()
+    impact_options = ["ALL", "Campaign", "Data Analyst"]
     impact_filter = st.sidebar.selectbox("🏢 Filter by Impact:", impact_options, index=0)
     
     request_options = ["ALL"] + df["request"].dropna().unique().tolist()
@@ -59,21 +57,16 @@ else:
 
     # Status color mapping
     def get_status_color(status):
-        colors = {
-            "Open": "🔴 Open", 
-            "In Progress": "🟠 In Progress", 
-            "Resolved": "🟢 Resolved", 
-            "Closed": "⚫ Closed"
-        }
+        colors = {"Open": "🔴 Open", "In Progress": "🟠 In Progress", "Resolved": "🟢 Resolved", "Closed": "⚫ Closed"}
         return colors.get(status, "⚪ Unknown")
 
-    # Ticket Overview Pie Chart with Count Summary
+    # Ticket Overview Pie Chart
     st.subheader("📊 Ticket Status Overview")
     status_counts = df["status"].value_counts().reset_index()
     status_counts.columns = ["Status", "Count"]
-    
+
     col1, col2 = st.columns([2, 1])
-    
+
     with col1:
         fig = px.pie(status_counts, names="Status", values="Count", title="Ticket Status Distribution", 
                      color_discrete_sequence=["#636EFA", "#EF553B", "#00CC96", "#AB63FA"],
@@ -83,16 +76,16 @@ else:
     
     with col2:
         st.markdown("### Ticket Summary")
-        for index, row in status_counts.iterrows():
+        for _, row in status_counts.iterrows():
             st.write(f"**{row['Status']}:** {row['Count']}")
 
     # Delete all closed tickets button
     if st.button("🗑️ Delete All Closed Tickets"):
-        response = supabase.table("tickets").delete().eq("status", "Closed").execute()
-        if response.error:
-            st.error("❌ Error deleting closed tickets.")
+        delete_response = supabase.table("tickets").delete().eq("status", "Closed").execute()
+        if delete_response.error:
+            st.error(f"❌ Failed to delete closed tickets: {delete_response.error}")
         else:
-            st.success("✅ All closed tickets have been deleted!")
+            st.success("All closed tickets have been deleted!")
             st.rerun()
 
     # Ticket list
@@ -123,19 +116,21 @@ else:
                     )
 
             # Allow status update within expander
-            new_status = st.selectbox(
-                "🔄 Update Status:", 
-                ["Open", "In Progress", "Resolved", "Closed"], 
-                key=f"status_{ticket_number}"
-            )
+            new_status = st.selectbox("🔄 Update Status:", ["Open", "In Progress", "Resolved", "Closed"], key=f"status_{ticket_number}")
             
             if st.button(f"✅ Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
-                response = supabase.table("tickets").update(
-                    {"status": new_status, "updated_at": datetime.utcnow().isoformat()}
-                ).eq("ticket_number", ticket_number).execute()
+                # Check if ticket exists before updating
+                ticket_exists = supabase.table("tickets").select("ticket_number").eq("ticket_number", ticket_number).execute()
                 
-                if response.error:
-                    st.error(f"❌ Error updating ticket {ticket_number}.")
+                if len(ticket_exists.data) == 0:
+                    st.error(f"❌ Ticket {ticket_number} not found!")
                 else:
-                    st.success(f"✅ Ticket {ticket_number} updated to '{new_status}'")
-                    st.rerun()  # Auto-refresh the page
+                    update_response = supabase.table("tickets").update(
+                        {"status": new_status, "updated_at": datetime.utcnow().isoformat()}
+                    ).eq("ticket_number", ticket_number).execute()
+                    
+                    if update_response.error:
+                        st.error(f"❌ Failed to update ticket: {update_response.error}")
+                    else:
+                        st.success(f"Ticket {ticket_number} updated to '{new_status}'")
+                        st.rerun()  # Auto-refresh the page
