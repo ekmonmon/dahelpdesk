@@ -4,7 +4,6 @@ import plotly.express as px
 from datetime import datetime
 from supabase import create_client, Client
 import asyncio
-import threading
 
 # Supabase credentials
 SUPABASE_URL = "https://zqycetikgrqgzbzrxzok.supabase.co"
@@ -15,36 +14,36 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 st.set_page_config(page_title="Data Analyst Helpdesk", page_icon="📊", layout="wide")
 st.title("📊 Data Analyst Helpdesk")
 
-# Function to fetch tickets from Supabase
+# Function to fetch tickets
 def fetch_tickets():
     response = supabase.table("tickets").select("*").execute()
     return pd.DataFrame(response.data)
 
-# Create a placeholder to hold the UI that displays tickets
-tickets_container = st.empty()
+df = fetch_tickets()
 
-# Initialize session state with tickets data if not already set
-if "tickets_df" not in st.session_state:
-    st.session_state.tickets_df = fetch_tickets()
+# Listen for realtime updates
+def handle_update(payload):
+    st.experimental_rerun()
 
-# Define a function that renders the main UI using a provided DataFrame
-def display_ui(df: pd.DataFrame):
-    if df.empty:
-        st.warning("No tickets found in the database.")
-        return
+supabase.table("tickets").on("UPDATE", handle_update).subscribe()
 
+# Ensure the DataFrame is not empty
+if df.empty:
+    st.warning("No tickets found in the database.")
+else:
     # Sidebar for filtering
     st.sidebar.title("🎯 Ticket Filters")
+
     impact_options = ["ALL", "Campaign", "Data Analyst"]
     impact_filter = st.sidebar.selectbox("🏢 Filter by Impact:", impact_options, index=0)
     
-    request_options = ["ALL"] + (df["request"].unique().tolist() if "request" in df.columns else [])
+    request_options = ["ALL"] + df["request"].unique().tolist() if "request" in df.columns else ["ALL"]
     request_filter = st.sidebar.selectbox("📜 Filter by Request Type:", request_options, index=0)
     
     status_options = ["ALL"] + df["status"].unique().tolist()
     status_filter = st.sidebar.selectbox("📌 Filter by Status:", status_options, index=0)
     
-    priority_options = ["ALL"] + (df["priority"].unique().tolist() if "priority" in df.columns else [])
+    priority_options = ["ALL"] + df["priority"].unique().tolist() if "priority" in df.columns else ["ALL"]
     priority_filter = st.sidebar.selectbox("🚀 Filter by Priority:", priority_options, index=0)
 
     # Apply filters
@@ -82,12 +81,11 @@ def display_ui(df: pd.DataFrame):
         for index, row in status_counts.iterrows():
             st.write(f"**{row['Status']}:** {row['Count']}")
 
-    # Button to delete all closed tickets
+    # Delete all closed tickets button
     if st.button("🗑️ Delete All Closed Tickets"):
         supabase.table("tickets").delete().match({"status": "Closed"}).execute()
         st.success("All closed tickets have been deleted!")
-        # Update the tickets data without rerunning the app
-        update_ui()
+        st.rerun()
 
     # Ticket list
     st.subheader("📋 Ticket List")
@@ -113,44 +111,6 @@ def display_ui(df: pd.DataFrame):
             # Allow status update within expander
             new_status = st.selectbox("🔄 Update Status:", ["Open", "In Progress", "Resolved", "Closed"], key=f"status_{ticket_number}")
             if st.button(f"✅ Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
-                supabase.table("tickets").update(
-                    {"status": new_status, "updated_at": datetime.now().isoformat()}
-                ).match({"ticket_number": ticket_number}).execute()
+                supabase.table("tickets").update({"status": new_status, "updated_at": datetime.now().isoformat()}).match({"ticket_number": ticket_number}).execute()
                 st.success(f"Ticket {ticket_number} updated to '{new_status}'")
-                update_ui()
-
-# Define a function to refresh tickets and update the UI container
-def update_ui():
-    new_df = fetch_tickets()
-    st.session_state.tickets_df = new_df
-    tickets_container.empty()
-    with tickets_container:
-        display_ui(new_df)
-
-# Initially render the UI using the stored tickets data
-with tickets_container:
-    display_ui(st.session_state.tickets_df)
-
-# Define the realtime update callback (without calling rerun)
-def handle_update(payload):
-    # On receiving a realtime event, update only the ticket UI
-    update_ui()
-
-# Asynchronous function to subscribe to realtime updates
-async def subscribe_realtime():
-    channel = supabase.realtime.channel("database")
-    channel.on_postgres_changes(
-        "INSERT",
-        schema="public",
-        table="tickets",
-        callback=handle_update
-    ).subscribe()
-    await supabase.realtime.listen()
-
-# Run the asynchronous realtime listener in a background thread
-def run_asyncio_loop(loop):
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(subscribe_realtime())
-
-new_loop = asyncio.new_event_loop()
-threading.Thread(target=run_asyncio_loop, args=(new_loop,), daemon=True).start()
+                st.rerun()  # Auto-refresh the page
