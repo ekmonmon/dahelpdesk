@@ -14,8 +14,25 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 # Initialize session state variables
 if "confirm_submission" not in st.session_state:
     st.session_state.confirm_submission = False
-if "submitted" not in st.session_state:
-    st.session_state.submitted = False  # Controls whether form fields are disabled
+if "form_disabled" not in st.session_state:
+    st.session_state.form_disabled = False  # Controls form editability
+
+# UI Styling
+st.markdown(
+    """
+    <style>
+        .stButton > button {
+            width: 100%;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .stTextInput, .stSelectbox, .stTextArea, .stFileUploader {
+            border-radius: 8px;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 st.title("Agent Helpdesk - Submit a Ticket")
 st.markdown("---")
@@ -23,8 +40,8 @@ st.markdown("---")
 # Form for submitting a ticket
 with st.form("ticket_form"):
     st.subheader("Submit a Ticket")
-
-    lark_email = st.text_input("Lark Email:", disabled=st.session_state.submitted)
+    
+    lark_email = st.text_input("Lark Email:", disabled=st.session_state.form_disabled)
     campaign = st.selectbox("Campaign:", ["", "AEON", "AIQON", "BANK OF MAKATI", "BANKARD", "BDO", "BDO 60DPD", "BDO AR", "BDO AUTO LOAN", 
     "BDO AUTO SKIP", "BDO HOME LOAN", "BDO HOMELOAN COLLECT", "BDO HOMELOAN SKIP", "BDO INSURANCE", 
     "BDO PRE LEGAL", "BDO PRU", "BPI AUTO", "BPI AUTO SKIP", "BPI BANKO", "BPI BANKO", 
@@ -49,16 +66,16 @@ with st.form("ticket_form"):
     "SBC AUTO - CURING", "SBC AUTO LOAN", "SBC HOMELOAN", "SBF Motor Loan", "SBF Personal Loan", 
     "SUMISHO", "TALA EDC", "TENDOPAY", "TEST", "TOYOTA LEVEL 3", "TONIK", "UBP - CARDS", "UBP - COMBANK", 
     "UBP - SEEKCAP", "UBP - SME", "UBP - SME DPD", "UBP PRE WRITE CURING", "UD CASH LOAN", "UNIONDIGITAL", 
-    "UNO"], disabled=st.session_state.submitted)
-    impact = st.selectbox("Impact:", ["", "Data Analyst", "Campaign"], disabled=st.session_state.submitted)
-    request = st.selectbox("Request Type:", ["", "Data Extraction", "Report Issue", "New Report Request", "Dashboard Update", "System Issue", "Other"], disabled=st.session_state.submitted)
-    description = st.text_area("Description:", disabled=st.session_state.submitted)
-    priority = st.selectbox("Priority:", ["", "Critical", "High", "Medium", "Low"], disabled=st.session_state.submitted)
-    attachment = st.file_uploader("📎 Attachment (if any):", type=["png", "jpg", "pdf"], disabled=st.session_state.submitted)
+    "UNO"], disabled=st.session_state.form_disabled)
+    impact = st.selectbox("Impact:", ["", "Data Analyst", "Campaign"], disabled=st.session_state.form_disabled)
+    request = st.selectbox("Request Type:", ["", "Data Extraction", "Report Issue", "New Report Request", "Dashboard Update", "System Issue", "Other"], disabled=st.session_state.form_disabled)
+    description = st.text_area("Description:", disabled=st.session_state.form_disabled)
+    priority = st.selectbox("Priority:", ["", "Critical", "High", "Medium", "Low"], disabled=st.session_state.form_disabled)
+    attachment = st.file_uploader("📎 Attachment (if any):", type=["png", "jpg", "pdf"], disabled=st.session_state.form_disabled)
+    
+    submit_button = st.form_submit_button("Submit Ticket")
 
-    submit_button = st.form_submit_button("Submit Ticket", disabled=st.session_state.submitted)
-
-# Handle form submission logic
+# When Submit is clicked, trigger confirmation pop-up
 if submit_button:
     if not lark_email or not campaign or not request or not description:
         st.error("⚠️ Please fill in all required fields.")
@@ -68,21 +85,25 @@ if submit_button:
 # Show confirmation pop-up
 if st.session_state.confirm_submission:
     st.warning("⚠️ Please confirm your submission before proceeding:")
-
+    
     st.write(f" **Lark Email:** {lark_email}")
     st.write(f" **Campaign:** {campaign}")
     st.write(f" **Impact:** {impact}")
     st.write(f" **Request Type:** {request}")
     st.write(f" **Priority:** {priority}")
     st.write(f" **Description:** {description}")
-
+    
     confirm = st.button("✅ Confirm Submission")
     cancel = st.button("❌ Cancel")
 
     if confirm:
+        # Disable the form fields
+        st.session_state.form_disabled = True
+
         ticket_number = f"DAH-{datetime.datetime.now().strftime('%H%M%S')}"
         submission_time = datetime.datetime.now(ph_tz).strftime('%Y-%m-%d %H:%M:%S')
 
+        # Insert into Supabase
         data = {
             "ticket_number": ticket_number,
             "lark_email": lark_email,
@@ -94,30 +115,16 @@ if st.session_state.confirm_submission:
             "status": "Open",
             "submission_time": submission_time,
         }
-
+        
         try:
             response = supabase.table("tickets").insert(data).execute()
-
             if response and "error" not in response:
-                st.success("✅ Ticket Submitted!")
-                st.write(f"🎫 Your Ticket Number: **{ticket_number}**")
-                st.session_state.submitted = True  # Disable fields after submission
-                st.session_state.confirm_submission = False
-
+                st.success(f"✅ Ticket Submitted! 🎫 Your Ticket Number: **{ticket_number}**")
             else:
                 st.error("❌ Error submitting ticket. Please try again.")
-                st.write(response)
-
         except Exception as e:
             st.error(f"❌ Failed to submit ticket: {str(e)}")
 
     elif cancel:
         st.warning("Submission cancelled. You can modify the details before submitting again.")
         st.session_state.confirm_submission = False
-
-# Button to allow another submission (refresh fields)
-if st.session_state.submitted:
-    if st.button("🆕 Submit Another Ticket"):
-        st.session_state.submitted = False  # Re-enable fields
-        st.session_state.confirm_submission = False
-        st.rerun()  # Refresh page
