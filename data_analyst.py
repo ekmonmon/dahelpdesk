@@ -82,9 +82,9 @@ else:
         color="Status",
         color_discrete_map=status_colors  # Assign custom colors
     )
-    
+
     st.plotly_chart(fig, use_container_width=True)
-    
+
     # Delete all closed tickets
     if st.button("Delete All Closed Tickets", help="Removes all tickets marked as Closed"):
         supabase.table("tickets").delete().eq("status", "Closed").execute()
