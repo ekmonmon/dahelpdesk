@@ -68,10 +68,7 @@ with st.form("ticket_form"):
     
     impact = st.selectbox("Impact:", ["Data Analyst", "Campaign"] )
     
-    request = st.selectbox("Request Type:", [
-        "Data Extraction", "Report Issue", "New Report Request",
-        "Dashboard Update", "System Issue", "Other"
-    ])
+    request = st.selectbox("Request Type:", ["Data Extraction", "Report Issue", "New Report Request", "Dashboard Update", "System Issue", "Other"])
     
     description = st.text_area("Description:")
     
