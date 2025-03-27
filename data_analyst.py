@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import pytz
 from datetime import datetime
 from supabase import create_client, Client
 
@@ -16,10 +17,10 @@ st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
 st.markdown("""
     <style>
         .header-title {text-align: center; font-size: 32px; font-weight: bold; color: #2C3E50;}
-        .summary-box {padding: 15px; border-radius: 8px; background-color: #ECF0F1; margin-bottom: 20px;}
+        .summary-box {padding: 15px; border-radius: 8px; background-color: #2C3E50; color: white; margin-bottom: 20px; text-align: center; font-size: 20px;}
         .sidebar-title {font-size: 18px; font-weight: bold;}
         .status-box {display: flex; justify-content: space-between; margin-top: 20px;}
-        .status-item {padding: 15px; background-color: #F4F4F4; border-radius: 8px; text-align: center; width: 23%;}
+        .status-item {padding: 15px; background-color: #34495E; color: white; border-radius: 8px; text-align: center; width: 23%;}
         .button-container {text-align: center; margin-top: 20px;}
         .status-circle {display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px;}
         .circle-open {background-color: red;}
@@ -58,11 +59,11 @@ else:
         filtered_df = filtered_df[filtered_df["priority"] == priority_filter]
     
     # Ticket Status Overview
-    st.subheader("Ticket Status Overview")
+    st.subheader("Status Overview")
     status_counts = df["status"].value_counts().reset_index()
     status_counts.columns = ["Status", "Count"]
     fig = px.pie(status_counts, names="Status", values="Count", hole=0.4, color="Status",
-                  color_discrete_map={"Open": "red", "In Progress": "orange", "Resolved": "green", "Closed": "grey"})
+                  color_discrete_map={"Open": "#E74C3C", "In Progress": "#F39C12", "Resolved": "#2ECC71", "Closed": "#95A5A6"})
     
     col1, col2 = st.columns([2, 1])
     with col1:
@@ -70,7 +71,7 @@ else:
     with col2:
         st.markdown("<div class='summary-box'>", unsafe_allow_html=True)
         for _, row in status_counts.iterrows():
-            st.markdown(f"**{row['Status']}**: {row['Count']} tickets")
+            st.markdown(f"{row['Count']}")
         st.markdown("</div>", unsafe_allow_html=True)
     
     # Delete Closed Tickets Button
@@ -92,7 +93,7 @@ else:
         
         circle_class = "circle-open" if status == "Open" else "circle-in-progress" if status == "In Progress" else "circle-resolved" if status == "Resolved" else "circle-closed"
         
-        st.markdown(f"<span class='status-circle {circle_class}'></span> **Ticket #{ticket_number} - {request_type}**", unsafe_allow_html=True)
+        st.markdown(f"<span class='status-circle {circle_class}'></span> **#{ticket_number} - {request_type}**", unsafe_allow_html=True)
         
         with st.expander("More Information"):
             st.markdown(f"""
@@ -106,8 +107,9 @@ else:
             new_status = st.selectbox("Update Status", ["Open", "In Progress", "Resolved", "Closed"],
                                       index=["Open", "In Progress", "Resolved", "Closed"].index(status), key=f"status_{ticket_number}")
             
-            if st.button(f"Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
-                formatted_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            if st.button(f"Update #{ticket_number}", key=f"update_{ticket_number}"):
+                ph_timezone = pytz.timezone("Asia/Manila")
+                formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S"
                 supabase.table("tickets").update({"status": new_status, "updated_at": formatted_time}).eq("ticket_number", ticket_number).execute()
-                st.success(f"Ticket {ticket_number} updated to '{new_status}'")
+                st.success(f"#{ticket_number} updated to '{new_status}'")
                 st.rerun()
