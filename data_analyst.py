@@ -13,6 +13,20 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 # Set page title and layout
 st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
 
+st.markdown(
+    """
+    <style>
+        .big-title {text-align: center; font-size: 40px; font-weight: bold; color: #2C3E50; margin-bottom: 15px; padding: 15px; background-color: #ECF0F1; border-radius: 10px;}
+        .status-circle {display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px;}
+        .circle-open {background-color: red;}
+        .circle-in-progress {background-color: orange;}
+        .circle-resolved {background-color: green;}
+        .circle-closed {background-color: grey;}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 st.markdown('<p class="big-title">📌 Data Analyst Helpdesk System</p>', unsafe_allow_html=True)
 
 # Load tickets from Supabase
@@ -43,20 +57,12 @@ else:
     if search_query:
         filtered_df = filtered_df[filtered_df["ticket_number"].astype(str).str.contains(search_query, case=False, na=False)]
     
-    # Ticket Overview Pie Chart with Summary
+    # Ticket Overview Pie Chart
     st.subheader("Ticket Status Overview")
-    col1, col2 = st.columns([2, 1])
-    
-    with col1:
-        status_counts = df["status"].value_counts().reset_index()
-        status_counts.columns = ["Status", "Count"]
-        fig = px.pie(status_counts, names="Status", values="Count", title="Ticket Status Distribution", hole=0.4)
-        st.plotly_chart(fig, use_container_width=True)
-    
-    with col2:
-        st.subheader("Status Summary")
-        for index, row in status_counts.iterrows():
-            st.markdown(f"**{row['Status']}:** {row['Count']} tickets")
+    status_counts = df["status"].value_counts().reset_index()
+    status_counts.columns = ["Status", "Count"]
+    fig = px.pie(status_counts, names="Status", values="Count", title="Ticket Status Distribution", hole=0.4)
+    st.plotly_chart(fig, use_container_width=True)
     
     # Delete all closed tickets
     if st.button("Delete All Closed Tickets", help="Removes all tickets marked as Closed"):
@@ -75,9 +81,19 @@ else:
         description = ticket["description"]
         attachment_url = ticket["attachment"]
         
-        circle_class = "circle-open" if status == "Open" else "circle-in-progress" if status == "In Progress" else "circle-resolved" if status == "Resolved" else "circle-closed"
+        circle_class = {
+            "Open": "circle-open",
+            "In Progress": "circle-in-progress",
+            "Resolved": "circle-resolved",
+            "Closed": "circle-closed"
+        }.get(status, "circle-closed")
         
-        st.markdown(f"<span class='status-circle {circle_class}'></span> Ticket #{ticket_number} - {request_type}", unsafe_allow_html=True)
+        st.markdown(f"""
+            <div style="display: flex; align-items: center;">
+                <span class="status-circle {circle_class}"></span>
+                <b>Ticket #{ticket_number} - {request_type}</b>
+            </div>
+        """, unsafe_allow_html=True)
         
         with st.expander("More Information"):
             st.markdown(f"""
@@ -92,27 +108,12 @@ else:
             if attachment_url:
                 st.markdown(f"[Download Attachment]({attachment_url})")
             
-            # Select new status
-            new_status = st.selectbox(
-                "Update Status:",
-                ["Open", "In Progress", "Resolved", "Closed"],
-                index=["Open", "In Progress", "Resolved", "Closed"].index(status),
-                key=f"status_{ticket_number}"
-            )
+            new_status = st.selectbox("Update Status:", ["Open", "In Progress", "Resolved", "Closed"], index=["Open", "In Progress", "Resolved", "Closed"].index(status), key=f"status_{ticket_number}")
             
-            # Button to update ticket status
             if st.button(f"Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
-                # Get current time in UTC and convert to Philippine time
-                utc_now = datetime.utcnow()
                 ph_timezone = pytz.timezone("Asia/Manila")
-                ph_now = utc_now.replace(tzinfo=pytz.utc).astimezone(ph_timezone)
                 formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
                 
-                # Update ticket status and updated_at timestamp in Supabase
-                supabase.table("tickets").update({
-                    "status": new_status,
-                    "updated_at": formatted_time
-                }).eq("ticket_number", ticket_number).execute()
-                
+                supabase.table("tickets").update({"status": new_status, "updated_at": formatted_time}).eq("ticket_number", ticket_number).execute()
                 st.success(f"Ticket {ticket_number} updated to '{new_status}' at {formatted_time} (PH Time)")
                 st.rerun()
