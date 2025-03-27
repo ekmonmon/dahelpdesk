@@ -120,6 +120,7 @@ if st.session_state.confirm_submission:
             response = supabase.table("tickets").insert(data).execute()
             if response and "error" not in response:
                 st.success(f"✅ Ticket Submitted! 🎫 Your Ticket Number: **{ticket_number}**")
+                st.rerun()
             else:
                 st.error("❌ Error submitting ticket. Please try again.")
         except Exception as e:
@@ -128,4 +129,4 @@ if st.session_state.confirm_submission:
     elif cancel:
         st.warning("Submission cancelled. You can modify the details before submitting again.")
         st.session_state.confirm_submission = False
-st.rerun()
+
