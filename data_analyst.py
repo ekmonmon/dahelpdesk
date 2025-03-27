@@ -82,7 +82,7 @@ else:
         
         st.markdown(f"<span class='status-circle {circle_class}'></span> Ticket #{ticket_number} - {request_type}", unsafe_allow_html=True)
         
-        with st.expander(f"Ticket #{ticket_number} - {request_type}"):
+        with st.expander("More Information"):
             st.markdown(f"""
                 <div class="card">
                     <p><b>Priority:</b> {priority}</p>
