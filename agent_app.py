@@ -40,7 +40,7 @@ with st.form("ticket_form"):
     st.subheader("Submit a Ticket")
     
     lark_email = st.text_input("Lark Email:")
-    campaign = st.selectbox("Campaign:", ["AEON", "AIQON", "BANK OF MAKATI", "BANKARD", "BDO", "BDO 60DPD", "BDO AR", "BDO AUTO LOAN", 
+    campaign = st.selectbox("Campaign:", ["", "AEON", "AIQON", "BANK OF MAKATI", "BANKARD", "BDO", "BDO 60DPD", "BDO AR", "BDO AUTO LOAN", 
     "BDO AUTO SKIP", "BDO HOME LOAN", "BDO HOMELOAN COLLECT", "BDO HOMELOAN SKIP", "BDO INSURANCE", 
     "BDO PRE LEGAL", "BDO PRU", "BPI AUTO", "BPI AUTO SKIP", "BPI BANKO", "BPI BANKO", 
     "BPI CARDS 30 DPD", "BPI CARDS XDAYS", "BPI PL XDAYS", "BPI RBANK CARDS 30DPD", "BUSINESS LOAN", 
@@ -66,9 +66,9 @@ with st.form("ticket_form"):
     "UBP - SEEKCAP", "UBP - SME", "UBP - SME DPD", "UBP PRE WRITE CURING", "UD CASH LOAN", "UNIONDIGITAL", 
     "UNO"])
     
-    impact = st.selectbox("Impact:", ["Data Analyst", "Campaign"] )
+    impact = st.selectbox("Impact:", ["", "Data Analyst", "Campaign"] )
     
-    request = st.selectbox("Request Type:", ["Data Extraction", "Report Issue", "New Report Request", "Dashboard Update", "System Issue", "Other"])
+    request = st.selectbox("Request Type:", ["", "Data Extraction", "Report Issue", "New Report Request", "Dashboard Update", "System Issue", "Other"])
     
     description = st.text_area("Description:")
     
