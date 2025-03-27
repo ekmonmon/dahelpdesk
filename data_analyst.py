@@ -68,6 +68,11 @@ else:
         st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
     
+    # Display update message if available
+    if "update_message" in st.session_state:
+        st.success(st.session_state["update_message"])
+        del st.session_state["update_message"]
+    
     # Ticket list
     st.subheader("Ticket List")
     for _, ticket in filtered_df.iterrows():
@@ -100,25 +105,16 @@ else:
             
             if st.button(f"Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
                 try:
-                    # Fix timestamp format
                     ph_timezone = pytz.timezone("Asia/Manila")
                     formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
-
-                    # Update ticket status in Supabase
+                    
                     update_response = supabase.table("tickets").update({
                         "status": new_status,
                         "updated_at": formatted_time
                     }).eq("ticket_number", ticket_number).execute()
-
-                    # Debugging: Print API response
-                    st.write(update_response)
-
-                    # Check for errors in response
-                    if "error" in update_response and update_response["error"]:
-                        st.error(f"Failed to update ticket: {update_response['error']['message']}")
-                    else:
-                        st.success(f"Ticket {ticket_number} updated to '{new_status}'")
-                        st.rerun()
+                    
+                    st.session_state["update_message"] = f"✅ Ticket {ticket_number} updated to '{new_status}'"
+                    st.rerun()
                 
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
