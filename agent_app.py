@@ -66,9 +66,9 @@ with st.form("ticket_form"):
     "UBP - SEEKCAP", "UBP - SME", "UBP - SME DPD", "UBP PRE WRITE CURING", "UD CASH LOAN", "UNIONDIGITAL", 
     "UNO"])
     
-    impact = st.selectbox("Impact:", ["Data Analyst", "Campaign"] )
+    impact = st.selectbox("Impact:", ["Choose an option...", "Data Analyst", "Campaign"] )
     
-    request = st.selectbox("Request Type:", ["Data Extraction", "Report Issue", "New Report Request", "Dashboard Update", "System Issue", "Other"])
+    request = st.selectbox("Request Type:", ["Choose an option...", "Data Extraction", "Report Issue", "New Report Request", "Dashboard Update", "System Issue", "Other"])
     
     description = st.text_area("Description:")
     
