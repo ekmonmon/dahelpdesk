@@ -72,7 +72,7 @@ with st.form("ticket_form"):
     
     description = st.text_area("Description:")
     
-    priority = st.selectbox("Priority:", ["Critical", "High", "Medium", "Low"])
+    priority = st.selectbox("Priority:", ["", "Critical", "High", "Medium", "Low"])
     
     attachment = st.file_uploader("📎 Attachment (if any):", type=["png", "jpg", "pdf", "csv", "xlsx", "txt"])
     
