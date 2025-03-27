@@ -41,6 +41,7 @@ else:
     request_filter = st.sidebar.selectbox("Filter by Request Type:", ["ALL"] + df["request"].dropna().unique().tolist(), index=0)
     status_filter = st.sidebar.selectbox("Filter by Status:", ["ALL"] + df["status"].dropna().unique().tolist(), index=0)
     priority_filter = st.sidebar.selectbox("Filter by Priority:", ["ALL"] + df["priority"].dropna().unique().tolist(), index=0)
+    search_query = st.sidebar.text_input("Search Ticket Number:")
     
     # Apply filters
     filtered_df = df.copy()
@@ -52,13 +53,23 @@ else:
         filtered_df = filtered_df[filtered_df["status"] == status_filter]
     if priority_filter != "ALL":
         filtered_df = filtered_df[filtered_df["priority"] == priority_filter]
+    if search_query:
+        filtered_df = filtered_df[filtered_df["ticket_number"].astype(str).str.contains(search_query, case=False, na=False)]
     
-    # Ticket Overview Pie Chart
+    # Ticket Overview Pie Chart with Summary
     st.subheader("Ticket Status Overview")
-    status_counts = df["status"].value_counts().reset_index()
-    status_counts.columns = ["Status", "Count"]
-    fig = px.pie(status_counts, names="Status", values="Count", title="Ticket Status Distribution", hole=0.4)
-    st.plotly_chart(fig, use_container_width=True)
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        status_counts = df["status"].value_counts().reset_index()
+        status_counts.columns = ["Status", "Count"]
+        fig = px.pie(status_counts, names="Status", values="Count", title="Ticket Status Distribution", hole=0.4)
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+        st.subheader("Status Summary")
+        for index, row in status_counts.iterrows():
+            st.markdown(f"**{row['Status']}:** {row['Count']} tickets")
     
     # Delete all closed tickets
     st.markdown("<div class='button-container'>", unsafe_allow_html=True)
@@ -100,21 +111,3 @@ else:
             
             if attachment_url:
                 st.markdown(f"[Download Attachment]({attachment_url})")
-            
-            new_status = st.selectbox("Update Status:", ["Open", "In Progress", "Resolved", "Closed"], index=["Open", "In Progress", "Resolved", "Closed"].index(status), key=f"status_{ticket_number}")
-            
-            if st.button(f"Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
-                try:
-                    ph_timezone = pytz.timezone("Asia/Manila")
-                    formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
-                    
-                    update_response = supabase.table("tickets").update({
-                        "status": new_status,
-                        "updated_at": formatted_time
-                    }).eq("ticket_number", ticket_number).execute()
-                    
-                    st.session_state["update_message"] = f"✅ Ticket {ticket_number} updated to '{new_status}'"
-                    st.rerun()
-                
-                except Exception as e:
-                    st.error(f"An error occurred: {e}")
