@@ -8,7 +8,7 @@ ph_tz = pytz.timezone('Asia/Manila')
 
 # Supabase configuration
 SUPABASE_URL = "https://twyoryuxgvskitkvauyx.supabase.co"
-SUPABASE_KEY = "YOUR_SUPABASE_KEY_HERE"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3eW9yeXV4Z3Zza2l0a3ZhdXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5Njc1MDgsImV4cCI6MjA1ODU0MzUwOH0.P9M25ysxrIOpucNaUKQ-UzExO_MbF2ucTGovVU-uILk"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Initialize session state for confirmation pop-up
@@ -78,7 +78,7 @@ if st.session_state.confirm_submission:
 
                 # Generate public URL for the uploaded file
                 attachment_url = f"{SUPABASE_URL}/storage/v1/object/public/attachments/{filename}"
-
+            
             except Exception as e:
                 st.error(f"❌ File upload failed: {str(e)}")
                 attachment_url = None
