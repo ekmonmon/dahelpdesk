@@ -80,12 +80,13 @@ else:
         
         circle_class = "circle-open" if status == "Open" else "circle-in-progress" if status == "In Progress" else "circle-resolved" if status == "Resolved" else "circle-closed"
         
-        expander_title = f"<span class='status-circle {circle_class}'></span> Ticket #{ticket_number} - {request_type}"
+        st.markdown(f"<span class='status-circle {circle_class}'></span> Ticket #{ticket_number} - {request_type}", unsafe_allow_html=True)
         
-        with st.expander(expander_title, unsafe_allow_html=True):
+        with st.expander(f"Ticket #{ticket_number} - {request_type}"):
             st.markdown(f"""
                 <div class="card">
                     <p><b>Priority:</b> {priority}</p>
+                    <p><b>Status:</b> {status}</p>
                     <p><b>Date Submitted:</b> {submission_time}</p>
                     <p><b>Description:</b> {description}</p>
                 </div>
