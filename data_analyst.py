@@ -17,6 +17,9 @@ st.markdown(
     """
     <style>
         .big-title {text-align: center; font-size: 40px; font-weight: bold; color: #2C3E50; margin-bottom: 15px; padding: 15px; background-color: #ECF0F1; border-radius: 10px;}
+        .summary-card {text-align: center; padding: 15px; border-radius: 10px; color: white; font-size: 22px; font-weight: bold; margin: 5px;}
+        .summary-container {display: flex; flex-wrap: wrap; justify-content: space-around; gap: 10px;}
+        .summary-box {display: flex; flex-direction: column; align-items: center; padding: 10px; width: 100%;}
         .status-circle {display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px;}
         .circle-open {background-color: red;}
         .circle-in-progress {background-color: orange;}
@@ -57,33 +60,58 @@ else:
     if search_query:
         filtered_df = filtered_df[filtered_df["ticket_number"].astype(str).str.contains(search_query, case=False, na=False)]
     
-    # Ticket Overview Pie Chart
+    # Ticket Overview Section
     st.subheader("Ticket Status Overview")
+    
+    col1, col2 = st.columns([2, 1])  # Create two columns: 2/3 width for pie chart, 1/3 for summary
 
-    # Define custom colors for each status
-    status_colors = {
-        "Open": "red",
-        "In Progress": "orange",
-        "Resolved": "green",
-        "Closed": "grey"
-    }
+    with col1:
+        # Define custom colors for each status
+        status_colors = {
+            "Open": "red",
+            "In Progress": "orange",
+            "Resolved": "green",
+            "Closed": "grey"
+        }
 
-    # Count tickets per status
-    status_counts = df["status"].value_counts().reset_index()
-    status_counts.columns = ["Status", "Count"]
+        # Count tickets per status
+        status_counts = df["status"].value_counts().reset_index()
+        status_counts.columns = ["Status", "Count"]
 
-    # Create pie chart with custom colors
-    fig = px.pie(
-        status_counts, 
-        names="Status", 
-        values="Count", 
-        title="Ticket Status Distribution", 
-        hole=0.4,
-        color="Status",
-        color_discrete_map=status_colors  # Assign custom colors
-    )
+        # Create pie chart with custom colors
+        fig = px.pie(
+            status_counts, 
+            names="Status", 
+            values="Count", 
+            title="Ticket Status Distribution", 
+            hole=0.4,
+            color="Status",
+            color_discrete_map=status_colors
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
-    st.plotly_chart(fig, use_container_width=True)
+    with col2:
+        # Summary Statistics
+        total_tickets = len(df)
+        open_tickets = len(df[df["status"] == "Open"])
+        in_progress_tickets = len(df[df["status"] == "In Progress"])
+        resolved_tickets = len(df[df["status"] == "Resolved"])
+        closed_tickets = len(df[df["status"] == "Closed"])
+
+        st.markdown("<h3 style='text-align: center;'>📊 Ticket Summary</h3>", unsafe_allow_html=True)
+        
+        st.markdown(
+            f"""
+            <div class="summary-container">
+                <div class="summary-box" style="background-color: #3498db;">🔹 Total: {total_tickets}</div>
+                <div class="summary-box" style="background-color: #e74c3c;">🔴 Open: {open_tickets}</div>
+                <div class="summary-box" style="background-color: #f39c12;">🟠 In Progress: {in_progress_tickets}</div>
+                <div class="summary-box" style="background-color: #2ecc71;">🟢 Resolved: {resolved_tickets}</div>
+                <div class="summary-box" style="background-color: #7f8c8d;">⚫ Closed: {closed_tickets}</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
     # Delete all closed tickets
     if st.button("Delete All Closed Tickets", help="Removes all tickets marked as Closed"):
@@ -102,29 +130,17 @@ else:
         description = ticket["description"]
         attachment_url = ticket["attachment"]
         
-        circle_class = {
-            "Open": "circle-open",
-            "In Progress": "circle-in-progress",
-            "Resolved": "circle-resolved",
-            "Closed": "circle-closed"
-        }.get(status, "circle-closed")
-        
         st.markdown(f"""
             <div style="display: flex; align-items: center;">
-                <span class="status-circle {circle_class}"></span>
                 <b>Ticket #{ticket_number} - {request_type}</b>
             </div>
         """, unsafe_allow_html=True)
         
         with st.expander("More Information"):
-            st.markdown(f"""
-                <div class="card">
-                    <p><b>Priority:</b> {priority}</p>
-                    <p><b>Status:</b> {status}</p>
-                    <p><b>Date Submitted:</b> {submission_time}</p>
-                    <p><b>Description:</b> {description}</p>
-                </div>
-            """, unsafe_allow_html=True)
+            st.write(f"**Priority:** {priority}")
+            st.write(f"**Status:** {status}")
+            st.write(f"**Date Submitted:** {submission_time}")
+            st.write(f"**Description:** {description}")
             
             if attachment_url:
                 st.markdown(f"[Download Attachment]({attachment_url})")
@@ -132,9 +148,6 @@ else:
             new_status = st.selectbox("Update Status:", ["Open", "In Progress", "Resolved", "Closed"], index=["Open", "In Progress", "Resolved", "Closed"].index(status), key=f"status_{ticket_number}")
             
             if st.button(f"Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
-                ph_timezone = pytz.timezone("Asia/Manila")
-                formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
-                
-                supabase.table("tickets").update({"status": new_status, "updated_at": formatted_time}).eq("ticket_number", ticket_number).execute()
-                st.success(f"Ticket {ticket_number} updated to '{new_status}' at {formatted_time} (PH Time)")
+                supabase.table("tickets").update({"status": new_status}).eq("ticket_number", ticket_number).execute()
+                st.success(f"Ticket {ticket_number} updated to '{new_status}'")
                 st.rerun()
