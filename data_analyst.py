@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import pytz
 from datetime import datetime
 from supabase import create_client, Client
@@ -13,26 +12,8 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 # Set page layout
 st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
 
-# Custom CSS for styling
-st.markdown("""
-    <style>
-        .header-title {text-align: center; font-size: 36px; font-weight: bold; color: #2C3E50; margin-bottom: 20px;}
-        .summary-box {padding: 15px; border-radius: 8px; background-color: #2C3E50; color: white; text-align: center; font-size: 20px;}
-        .sidebar-title {font-size: 18px; font-weight: bold; margin-bottom: 10px;}
-        .status-container {display: flex; justify-content: space-between; gap: 10px; margin-bottom: 20px;}
-        .status-item {flex: 1; padding: 15px; background-color: #34495E; color: white; border-radius: 8px; text-align: center;}
-        .button-container {text-align: center; margin-top: 20px;}
-        .ticket-container {padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; background-color: #F9F9F9;}
-        .status-circle {display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px;}
-        .circle-open {background-color: red;}
-        .circle-in-progress {background-color: orange;}
-        .circle-resolved {background-color: green;}
-        .circle-closed {background-color: grey;}
-    </style>
-""", unsafe_allow_html=True)
-
 # Title
-st.markdown('<p class="header-title">📌 Data Analyst Helpdesk System</p>', unsafe_allow_html=True)
+st.title("📌 Data Analyst Helpdesk System")
 
 # Load tickets from Supabase
 tickets_response = supabase.table("tickets").select("*").execute()
@@ -42,7 +23,7 @@ if df.empty:
     st.warning("No tickets found in the database.")
 else:
     # Sidebar Filters
-    st.sidebar.markdown("<p class='sidebar-title'>Ticket Filters</p>", unsafe_allow_html=True)
+    st.sidebar.header("Filters")
     impact_filter = st.sidebar.selectbox("Impact", ["ALL"] + df["impact"].dropna().unique().tolist())
     request_filter = st.sidebar.selectbox("Request Type", ["ALL"] + df["request"].dropna().unique().tolist())
     status_filter = st.sidebar.selectbox("Status", ["ALL"] + df["status"].dropna().unique().tolist())
@@ -59,29 +40,17 @@ else:
     if priority_filter != "ALL":
         filtered_df = filtered_df[filtered_df["priority"] == priority_filter]
     
-    # Ticket Status Overview
+    # Status Overview
     st.subheader("Status Overview")
     status_counts = df["status"].value_counts().reset_index()
     status_counts.columns = ["Status", "Count"]
-    fig = px.pie(status_counts, names="Status", values="Count", hole=0.4, color="Status",
-                  color_discrete_map={"Open": "#E74C3C", "In Progress": "#F39C12", "Resolved": "#2ECC71", "Closed": "#95A5A6"})
-    
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        st.plotly_chart(fig, use_container_width=True)
-    with col2:
-        st.markdown("<div class='summary-box'>", unsafe_allow_html=True)
-        for _, row in status_counts.iterrows():
-            st.markdown(f"<p><b>{row['Status']}:</b> {row['Count']}</p>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+    st.dataframe(status_counts)
     
     # Delete Closed Tickets Button
-    st.markdown("<div class='button-container'>", unsafe_allow_html=True)
     if st.button("Delete All Closed Tickets"):
         supabase.table("tickets").delete().eq("status", "Closed").execute()
         st.success("All closed tickets deleted!")
         st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)
     
     # Ticket List
     st.subheader("Ticket List")
@@ -92,18 +61,11 @@ else:
         description = ticket["description"]
         submission_time = ticket["submission_time"].replace("T", " ")
         
-        circle_class = "circle-open" if status == "Open" else "circle-in-progress" if status == "In Progress" else "circle-resolved" if status == "Resolved" else "circle-closed"
-        
-        st.markdown(f"<div class='ticket-container'><span class='status-circle {circle_class}'></span> **#{ticket_number} - {request_type}**</div>", unsafe_allow_html=True)
-        
+        st.markdown(f"**#{ticket_number} - {request_type}**")
         with st.expander("More Information"):
-            st.markdown(f"""
-                <div class="summary-box">
-                    <p><b>Status:</b> {status}</p>
-                    <p><b>Date Submitted:</b> {submission_time}</p>
-                    <p><b>Description:</b> {description}</p>
-                </div>
-            """, unsafe_allow_html=True)
+            st.write(f"**Status:** {status}")
+            st.write(f"**Date Submitted:** {submission_time}")
+            st.write(f"**Description:** {description}")
             
             new_status = st.selectbox("Update Status", ["Open", "In Progress", "Resolved", "Closed"],
                                       index=["Open", "In Progress", "Resolved", "Closed"].index(status), key=f"status_{ticket_number}")
