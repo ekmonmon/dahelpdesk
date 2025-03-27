@@ -78,7 +78,6 @@ if st.session_state.confirm_submission:
 
                 # Generate public URL for the uploaded file
                 attachment_url = f"{SUPABASE_URL}/storage/v1/object/public/attachments/{filename}"
-                st.write(f"✅ File uploaded to: {attachment_url}")
 
             except Exception as e:
                 st.error(f"❌ File upload failed: {str(e)}")
