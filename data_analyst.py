@@ -13,10 +13,14 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
 st.markdown("""
     <style>
-        .big-title {text-align: center; font-size: 32px; font-weight: bold; color: #2C3E50; margin-bottom: 10px; padding: 10px; background-color: #ECF0F1; border-radius: 10px;}
+        .big-title {text-align: center; font-size: 40px; font-weight: bold; color: #2C3E50; margin-bottom: 15px; padding: 15px; background-color: #ECF0F1; border-radius: 10px;}
         .subheader {color: #555; font-size: 18px; margin-bottom: 20px;}
         .card {padding: 15px; margin: 10px 0; border-radius: 8px; background-color: #F4F4F4;}
         .button-container {display: flex; justify-content: flex-end; margin-top: 10px;}
+        .status-open {color: green; font-weight: bold;}
+        .status-in-progress {color: orange; font-weight: bold;}
+        .status-resolved {color: blue; font-weight: bold;}
+        .status-closed {color: red; font-weight: bold;}
     </style>
 """, unsafe_allow_html=True)
 
@@ -73,11 +77,13 @@ else:
         description = ticket["description"]
         attachment_url = ticket["attachment"]
         
-        with st.expander(f"Ticket #{ticket_number} - {request_type} ({status})"):
+        status_class = "status-open" if status == "Open" else "status-in-progress" if status == "In Progress" else "status-resolved" if status == "Resolved" else "status-closed"
+        
+        with st.expander(f"Ticket #{ticket_number} - {request_type} (<span class='{status_class}'>{status}</span>)", unsafe_allow_html=True):
             st.markdown(f"""
                 <div class="card">
                     <p><b>Priority:</b> {priority}</p>
-                    <p><b>Status:</b> {status}</p>
+                    <p><b>Status:</b> <span class='{status_class}'>{status}</span></p>
                     <p><b>Date Submitted:</b> {submission_time}</p>
                     <p><b>Description:</b> {description}</p>
                 </div>
