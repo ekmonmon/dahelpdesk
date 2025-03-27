@@ -15,7 +15,25 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 if "confirm_submission" not in st.session_state:
     st.session_state.confirm_submission = False
 
+# UI Styling
+st.markdown(
+    """
+    <style>
+        .stButton > button {
+            width: 100%;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .stTextInput, .stSelectbox, .stTextArea, .stFileUploader {
+            border-radius: 8px;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 st.title("🎛 Agent Helpdesk - Submit a Ticket")
+st.markdown("---")
 
 # Form for submitting a ticket
 with st.form("ticket_form"):
@@ -69,16 +87,12 @@ if st.session_state.confirm_submission:
             filename = f"{timestamp}_{attachment.name}"
             
             try:
-                # Convert UploadedFile to bytes
-                file_bytes = attachment.getvalue()
+                # Read file content
+                file_bytes = attachment.read()
                 
                 # Upload file directly to Supabase Storage
-                res = supabase.storage.from_("attachments").upload(filename, file_bytes, {"content-type": attachment.type})
+                res = supabase.storage.from_("attachments").upload(filename, file_bytes)
                 
-                # Check for upload errors
-                if isinstance(res, dict) and "error" in res:
-                    raise Exception(res["error"]["message"])
-
                 # Generate public URL for the uploaded file
                 attachment_url = f"{SUPABASE_URL}/storage/v1/object/public/attachments/{filename}"
             
