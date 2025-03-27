@@ -72,17 +72,10 @@ else:
             st.markdown(f"**{row['Status']}:** {row['Count']} tickets")
     
     # Delete all closed tickets
-    st.markdown("<div class='button-container'>", unsafe_allow_html=True)
     if st.button("Delete All Closed Tickets", help="Removes all tickets marked as Closed"):
         supabase.table("tickets").delete().eq("status", "Closed").execute()
         st.success("All closed tickets have been deleted!")
         st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    # Display update message if available
-    if "update_message" in st.session_state:
-        st.success(st.session_state["update_message"])
-        del st.session_state["update_message"]
     
     # Ticket list
     st.subheader("Ticket List")
@@ -111,3 +104,10 @@ else:
             
             if attachment_url:
                 st.markdown(f"[Download Attachment]({attachment_url})")
+            
+            new_status = st.selectbox("Update Status:", ["Open", "In Progress", "Resolved", "Closed"], index=["Open", "In Progress", "Resolved", "Closed"].index(status), key=f"status_{ticket_number}")
+            
+            if st.button(f"Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
+                supabase.table("tickets").update({"status": new_status}).eq("ticket_number", ticket_number).execute()
+                st.success(f"Ticket {ticket_number} updated to '{new_status}'")
+                st.rerun()
