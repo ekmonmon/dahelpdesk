@@ -99,7 +99,6 @@ if st.session_state.confirm_submission:
     if confirm:
         # Disable the form fields
         st.session_state.form_disabled = True
-        st.rerun()
         
         ticket_number = f"DAH-{datetime.datetime.now().strftime('%H%M%S')}"
         submission_time = datetime.datetime.now(ph_tz).strftime('%Y-%m-%d %H:%M:%S')
@@ -125,7 +124,7 @@ if st.session_state.confirm_submission:
                 st.error("❌ Error submitting ticket. Please try again.")
         except Exception as e:
             st.error(f"❌ Failed to submit ticket: {str(e)}")
-
+        st.rerun()
     elif cancel:
         st.warning("Submission cancelled. You can modify the details before submitting again.")
         st.session_state.confirm_submission = False
