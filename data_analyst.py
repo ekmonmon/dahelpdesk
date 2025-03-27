@@ -105,7 +105,7 @@ else:
                 # Get current time in UTC and convert to Philippine time
                 utc_now = datetime.utcnow()
                 ph_timezone = pytz.timezone("Asia/Manila")
-                ph_now = utc_now.replace(tzinfo=pytz.utc).astimezone(ph_tz)
+                ph_now = utc_now.replace(tzinfo=pytz.utc).astimezone(ph_timezone)
                 formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
                 
                 # Update ticket status and updated_at timestamp in Supabase
