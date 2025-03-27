@@ -109,7 +109,7 @@ else:
             
             if st.button(f"Update #{ticket_number}", key=f"update_{ticket_number}"):
                 ph_timezone = pytz.timezone("Asia/Manila")
-                formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S"
+                formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
                 supabase.table("tickets").update({"status": new_status, "updated_at": formatted_time}).eq("ticket_number", ticket_number).execute()
                 st.success(f"#{ticket_number} updated to '{new_status}'")
                 st.rerun()
