@@ -21,6 +21,11 @@ st.markdown("""
         .status-in-progress {color: orange; font-weight: bold;}
         .status-resolved {color: blue; font-weight: bold;}
         .status-closed {color: red; font-weight: bold;}
+        .status-circle {display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px;}
+        .circle-open {background-color: green;}
+        .circle-in-progress {background-color: orange;}
+        .circle-resolved {background-color: blue;}
+        .circle-closed {background-color: red;}
     </style>
 """, unsafe_allow_html=True)
 
@@ -78,9 +83,16 @@ else:
         attachment_url = ticket["attachment"]
         
         status_class = "status-open" if status == "Open" else "status-in-progress" if status == "In Progress" else "status-resolved" if status == "Resolved" else "status-closed"
+        circle_class = "circle-open" if status == "Open" else "circle-in-progress" if status == "In Progress" else "circle-resolved" if status == "Resolved" else "circle-closed"
         
-        with st.expander(f"Ticket #{ticket_number} - {request_type}"):
-            st.markdown(f"<p class='{status_class}'><b>Status:</b> {status}</p>", unsafe_allow_html=True)
+        with st.expander(f"Ticket #{ticket_number} - {request_type}  "):
+            st.markdown(f"""
+                <div>
+                    <span class='status-circle {circle_class}'></span>
+                    <b>Status:</b> <span class='{status_class}'>{status}</span>
+                </div>
+            """, unsafe_allow_html=True)
+            
             st.markdown(f"""
                 <div class="card">
                     <p><b>Priority:</b> {priority}</p>
