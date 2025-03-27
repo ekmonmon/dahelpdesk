@@ -79,11 +79,11 @@ else:
         
         status_class = "status-open" if status == "Open" else "status-in-progress" if status == "In Progress" else "status-resolved" if status == "Resolved" else "status-closed"
         
-        with st.expander(f"Ticket #{ticket_number} - {request_type} (<span class='{status_class}'>{status}</span>)", unsafe_allow_html=True):
+        with st.expander(f"Ticket #{ticket_number} - {request_type}"):
+            st.markdown(f"<p class='{status_class}'><b>Status:</b> {status}</p>", unsafe_allow_html=True)
             st.markdown(f"""
                 <div class="card">
                     <p><b>Priority:</b> {priority}</p>
-                    <p><b>Status:</b> <span class='{status_class}'>{status}</span></p>
                     <p><b>Date Submitted:</b> {submission_time}</p>
                     <p><b>Description:</b> {description}</p>
                 </div>
