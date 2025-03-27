@@ -51,7 +51,7 @@ with st.form("ticket_form"):
     "UBP - SEEKCAP", "UBP - SME", "UBP - SME DPD", "UBP PRE WRITE CURING", "UD CASH LOAN", "UNIONDIGITAL", 
     "UNO"], disabled=st.session_state.submitted)
     impact = st.selectbox("Impact:", ["", "Data Analyst", "Campaign"], disabled=st.session_state.submitted)
-    request = st.selectbox("Request Type:", ["", "Data Extraction", "Report Issue"], disabled=st.session_state.submitted)
+    request = st.selectbox("Request Type:", ["", "Data Extraction", "Report Issue", "New Report Request", "Dashboard Update", "System Issue", "Other"], disabled=st.session_state.submitted)
     description = st.text_area("Description:", disabled=st.session_state.submitted)
     priority = st.selectbox("Priority:", ["", "Critical", "High", "Medium", "Low"], disabled=st.session_state.submitted)
     attachment = st.file_uploader("📎 Attachment (if any):", type=["png", "jpg", "pdf"], disabled=st.session_state.submitted)
