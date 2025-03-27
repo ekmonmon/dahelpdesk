@@ -1,18 +1,14 @@
 import streamlit as st
 import datetime
-import os
 from supabase import create_client, Client
-import datetime
 import pytz
 
 # Set timezone to Philippines (UTC+8)
 ph_tz = pytz.timezone('Asia/Manila')
 
-# Get current time in PH timezone
-
 # Supabase configuration
 SUPABASE_URL = "https://twyoryuxgvskitkvauyx.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3eW9yeXV4Z3Zza2l0a3ZhdXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5Njc1MDgsImV4cCI6MjA1ODU0MzUwOH0.P9M25ysxrIOpucNaUKQ-UzExO_MbF2ucTGovVU-uILk"
+SUPABASE_KEY = "YOUR_SUPABASE_KEY_HERE"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Initialize session state for confirmation pop-up
@@ -69,22 +65,24 @@ if st.session_state.confirm_submission:
         
         attachment_url = None
         if attachment:
-            attachment_dir = "attachments"
-            os.makedirs(attachment_dir, exist_ok=True)
-            
             timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
             filename = f"{timestamp}_{attachment.name}"
-            attachment_path = os.path.join(attachment_dir, filename)
             
-            with open(attachment_path, "wb") as f:
-                f.write(attachment.getbuffer())
-            
-            # Upload to Supabase Storage (Ensure you have a bucket named "attachments")
-            with open(attachment_path, "rb") as f:
-                res = supabase.storage.from_("attachments").upload(filename, f)
-            
-            attachment_url = f"{SUPABASE_URL}/storage/v1/object/public/attachments/{filename}"
-            st.write(f"✅ File uploaded to: {attachment_url}")
+            try:
+                # Upload file directly to Supabase Storage
+                res = supabase.storage.from_("attachments").upload(filename, attachment, {"content-type": attachment.type})
+                
+                # Check for upload errors
+                if isinstance(res, dict) and "error" in res:
+                    raise Exception(res["error"]["message"])
+
+                # Generate public URL for the uploaded file
+                attachment_url = f"{SUPABASE_URL}/storage/v1/object/public/attachments/{filename}"
+                st.write(f"✅ File uploaded to: {attachment_url}")
+
+            except Exception as e:
+                st.error(f"❌ File upload failed: {str(e)}")
+                attachment_url = None
 
         submission_time = datetime.datetime.now(ph_tz).strftime('%Y-%m-%d %H:%M:%S')
 
@@ -101,17 +99,23 @@ if st.session_state.confirm_submission:
             "status": "Open",
             "submission_time": submission_time,
         }
-        response = supabase.table("tickets").insert(data).execute()
         
-        if response is not None:
-            st.success("✅ Ticket Submitted!")
-            st.write("📌 Please wait for a moment, a Data Analyst will come back to you soon.")
-            st.write(f"🎫 Your Ticket Number: **{ticket_number}**")
-        else:
-            st.error("❌ Error submitting ticket. Please try again.")
-            st.write(response)
-        
+        try:
+            response = supabase.table("tickets").insert(data).execute()
+            
+            if response and "error" not in response:
+                st.success("✅ Ticket Submitted!")
+                st.write("📌 Please wait for a moment, a Data Analyst will come back to you soon.")
+                st.write(f"🎫 Your Ticket Number: **{ticket_number}**")
+            else:
+                st.error("❌ Error submitting ticket. Please try again.")
+                st.write(response)
+
+        except Exception as e:
+            st.error(f"❌ Failed to submit ticket: {str(e)}")
+
         st.session_state.confirm_submission = False
+
     elif cancel:
         st.warning("Submission cancelled. You can modify the details before submitting again.")
         st.session_state.confirm_submission = False
