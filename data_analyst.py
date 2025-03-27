@@ -59,9 +59,30 @@ else:
     
     # Ticket Overview Pie Chart
     st.subheader("Ticket Status Overview")
+
+    # Define custom colors for each status
+    status_colors = {
+        "Open": "red",
+        "In Progress": "orange",
+        "Resolved": "green",
+        "Closed": "grey"
+    }
+
+    # Count tickets per status
     status_counts = df["status"].value_counts().reset_index()
     status_counts.columns = ["Status", "Count"]
-    fig = px.pie(status_counts, names="Status", values="Count", title="Ticket Status Distribution", hole=0.4)
+
+    # Create pie chart with custom colors
+    fig = px.pie(
+        status_counts, 
+        names="Status", 
+        values="Count", 
+        title="Ticket Status Distribution", 
+        hole=0.4,
+        color="Status",
+        color_discrete_map=status_colors  # Assign custom colors
+    )
+    
     st.plotly_chart(fig, use_container_width=True)
     
     # Delete all closed tickets
