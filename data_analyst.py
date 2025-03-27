@@ -10,7 +10,7 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Set page title and layout
-st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
+st.set_page_config(page_title="Helpdesk Ticket Management", layout="wide")
 st.markdown("""
     <style>
         .big-title {text-align: center; font-size: 40px; font-weight: bold; color: #2C3E50; margin-bottom: 15px; padding: 15px; background-color: #ECF0F1; border-radius: 10px;}
@@ -25,7 +25,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<p class="big-title">📌 Data Analyst Helpdesk System</p>', unsafe_allow_html=True)
+st.markdown('<p class="big-title">🎫 Helpdesk Ticket Management System</p>', unsafe_allow_html=True)
 
 # Load tickets from Supabase
 tickets_response = supabase.table("tickets").select("*").execute()
@@ -52,12 +52,29 @@ else:
     if priority_filter != "ALL":
         filtered_df = filtered_df[filtered_df["priority"] == priority_filter]
     
-    # Ticket Overview Pie Chart
+    # Ticket Overview Pie Chart & Summary
     st.subheader("Ticket Status Overview")
-    status_counts = df["status"].value_counts().reset_index()
-    status_counts.columns = ["Status", "Count"]
-    fig = px.pie(status_counts, names="Status", values="Count", title="Ticket Status Distribution", hole=0.4)
-    st.plotly_chart(fig, use_container_width=True)
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        status_counts = df["status"].value_counts().reset_index()
+        status_counts.columns = ["Status", "Count"]
+        fig = px.pie(status_counts, names="Status", values="Count", title="Ticket Status Distribution", hole=0.4, color_discrete_sequence=px.colors.sequential.Blues_r)
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+        total_tickets = len(df)
+        open_tickets = len(df[df["status"] == "Open"])
+        in_progress_tickets = len(df[df["status"] == "In Progress"])
+        resolved_tickets = len(df[df["status"] == "Resolved"])
+        closed_tickets = len(df[df["status"] == "Closed"])
+        
+        st.markdown("### Summary")
+        st.markdown(f"**Total Tickets:** {total_tickets}")
+        st.markdown(f"🟥 **Open:** {open_tickets}")
+        st.markdown(f"🟧 **In Progress:** {in_progress_tickets}")
+        st.markdown(f"🟩 **Resolved:** {resolved_tickets}")
+        st.markdown(f"⬜ **Closed:** {closed_tickets}")
     
     # Delete all closed tickets
     st.markdown("<div class='button-container'>", unsafe_allow_html=True)
@@ -82,7 +99,7 @@ else:
         
         st.markdown(f"<span class='status-circle {circle_class}'></span> Ticket #{ticket_number} - {request_type}", unsafe_allow_html=True)
         
-        with st.expander("More Information"):
+        with st.expander(f"Ticket #{ticket_number} - {request_type}"):
             st.markdown(f"""
                 <div class="card">
                     <p><b>Priority:</b> {priority}</p>
@@ -95,28 +112,8 @@ else:
             if attachment_url:
                 st.markdown(f"[Download Attachment]({attachment_url})")
             
-            new_status = st.selectbox("Update Status:", ["Open", "In Progress", "Resolved", "Closed"], index=["Open", "In Progress", "Resolved", "Closed"].index(status), key=f"status_{ticket_number}")
-            
+            new_status = st.selectbox("Update Status:", ["Open", "In Progress", "Resolved", "Closed"], key=f"status_{ticket_number}")
             if st.button(f"Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
-                try:
-                    # Fix timestamp format
-                    formatted_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-                    # Update ticket status in Supabase
-                    update_response = supabase.table("tickets").update({
-                        "status": new_status,
-                        "updated_at": formatted_time
-                    }).eq("ticket_number", ticket_number).execute()
-
-                    # Debugging: Print API response
-                    st.write(update_response)
-
-                    # Check for errors in response
-                    if "error" in update_response and update_response["error"]:
-                        st.error(f"Failed to update ticket: {update_response['error']['message']}")
-                    else:
-                        st.success(f"Ticket {ticket_number} updated to '{new_status}'")
-                        st.rerun()
-                
-                except Exception as e:
-                    st.error(f"An error occurred: {e}")
+                supabase.table("tickets").update({"status": new_status, "updated_at": datetime.now().isoformat()}).eq("ticket_number", ticket_number).execute()
+                st.success(f"Ticket {ticket_number} updated to '{new_status}'")
+                st.rerun()
