@@ -25,7 +25,31 @@ with st.form("ticket_form"):
     st.subheader("Submit a Ticket")
 
     lark_email = st.text_input("Lark Email:", disabled=st.session_state.submitted)
-    campaign = st.selectbox("Campaign:", ["", "AEON", "AIQON", "BANK OF MAKATI"], disabled=st.session_state.submitted)
+    campaign = st.selectbox("Campaign:", ["", "AEON", "AIQON", "BANK OF MAKATI", "BANKARD", "BDO", "BDO 60DPD", "BDO AR", "BDO AUTO LOAN", 
+    "BDO AUTO SKIP", "BDO HOME LOAN", "BDO HOMELOAN COLLECT", "BDO HOMELOAN SKIP", "BDO INSURANCE", 
+    "BDO PRE LEGAL", "BDO PRU", "BPI AUTO", "BPI AUTO SKIP", "BPI BANKO", "BPI BANKO", 
+    "BPI CARDS 30 DPD", "BPI CARDS XDAYS", "BPI PL XDAYS", "BPI RBANK CARDS 30DPD", "BUSINESS LOAN", 
+    "CBC", "CBS AUTO LOAN", "CBS HOMELOAN", "CBS PERSONAL LOAN", "CEBU PL", "CEBUANA LHUILLIER", 
+    "CHINA BANK SAVINGS", "COLLECTIUS", "CSB", "CSB REPO", "DAVPL", "EWB", "EWB AUTO", "ESQUIRE", 
+    "FHL SALMON", "FUSE", "GARNET", "GENERAL", "HOME CREDIT", "HSBG", "HSBM", "HSBC UAE", "INVESTREE PH", 
+    "LEGAL BNB MSME", "LEGAL BNB SL", "LEGAL BMI MCL", "LEGAL BPI", "LEGAL BPI BSL", "LEGAL BDO", 
+    "LEGAL CSB DEPED", "LEGAL CSB MCL", "LEGAL HSBC", "LEGAL RCBC", "LEGAL SBC", "LEGAL SBF", 
+    "MAD120DPD", "MAD150DPD", "MAD150DPD PL", "MAD180DPD", "MADCEBU 1 AND 2", "MADCEBU 180DPD", 
+    "MADDAV 120DPD", "MADDAV 150DPD", "MADDAV1", "MADDAV2", "MADILO 1 AND 2", "MADILO 180DPD", "MADPL1", 
+    "MALAYAN SAVINGS BANK", "MALAYAN SB PL", "MAYA", "MBA", "MBTC P2", "MBTC PA", "MCC", "MCC 30DPD", 
+    "MCC AP13", "MCC P4", "MCC P90", "MCC PL", "MITSU MOTOR LOAN CURING", "MITSU MOTOR LOAN RECOV", 
+    "MSME", "MSME NON WRITE", "NBD CARDS", "NCCF SALARY LOAN", "ONB", "ORICO AUTO LOAN", "PIF - MINDANAO", 
+    "PIF - NCR", "PIF - NORTH LUZON", "PIF - SOUTH LUZON", "PIF - VISAYAS", "PIF LEGAL", "PL RECO 1", 
+    "PL RECO 2", "PL RECO 3", "PNB HOMELOAN", "PRE LEGAL BPI CARDS", "PRE LEGAL CSB MCL", "PRELEGAL BNB MSME", 
+    "PRELEGAL BNB SL", "PRELEGAL BMI MCL", "PRELEGAL BPI BSL", "PRELEGAL BNB SL", "PRELEGAL BPI BSL", 
+    "PRELEGAL CSB DEPED", "PRELEGAL CSB MCL", "PRELEGAL HSBC", "PRELEGAL RCBC", "PRELEGAL SBF FINANCE", 
+    "PRELEGAL SBC", "PSB", "PSB AUTO", "PSB AUTO CURING", "RCBC AUTO LOAN", "RCBC PRE WRITE", 
+    "RECO 1 CARDS", "RECO 2 CARDS", "RECO 3 CARDS", "RECO SPECIAL PROJECT", "RIZAL MICROBANK", 
+    "ROBINSONS", "ROB AUTO", "ROB BIKE", "SARISUKI", "SBC - CARDS", "SBC - CURING", "SBC - PL", 
+    "SBC AUTO - CURING", "SBC AUTO LOAN", "SBC HOMELOAN", "SBF Motor Loan", "SBF Personal Loan", 
+    "SUMISHO", "TALA EDC", "TENDOPAY", "TEST", "TOYOTA LEVEL 3", "TONIK", "UBP - CARDS", "UBP - COMBANK", 
+    "UBP - SEEKCAP", "UBP - SME", "UBP - SME DPD", "UBP PRE WRITE CURING", "UD CASH LOAN", "UNIONDIGITAL", 
+    "UNO"], disabled=st.session_state.submitted)
     impact = st.selectbox("Impact:", ["", "Data Analyst", "Campaign"], disabled=st.session_state.submitted)
     request = st.selectbox("Request Type:", ["", "Data Extraction", "Report Issue"], disabled=st.session_state.submitted)
     description = st.text_area("Description:", disabled=st.session_state.submitted)
