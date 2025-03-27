@@ -8,7 +8,7 @@ ph_tz = pytz.timezone('Asia/Manila')
 
 # Supabase configuration
 SUPABASE_URL = "https://twyoryuxgvskitkvauyx.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3eW9yeXV4Z3Zza2l0a3ZhdXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5Njc1MDgsImV4cCI6MjA1ODU0MzUwOH0.P9M25ysxrIOpucNaUKQ-UzExO_MbF2ucTGovVU-uILk"
+SUPABASE_KEY = "your_supabase_key_here"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Initialize session state variables
@@ -16,23 +16,8 @@ if "confirm_submission" not in st.session_state:
     st.session_state.confirm_submission = False
 if "form_disabled" not in st.session_state:
     st.session_state.form_disabled = False  # Controls form editability
-
-# UI Styling
-st.markdown(
-    """
-    <style>
-        .stButton > button {
-            width: 100%;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-        .stTextInput, .stSelectbox, .stTextArea, .stFileUploader {
-            border-radius: 8px;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+if "submitted_ticket" not in st.session_state:
+    st.session_state.submitted_ticket = None  # Stores ticket number after submission
 
 st.title("Agent Helpdesk - Submit a Ticket")
 st.markdown("---")
@@ -83,7 +68,7 @@ if submit_button:
         st.session_state.confirm_submission = True
 
 # Show confirmation pop-up
-if st.session_state.confirm_submission:
+if st.session_state.confirm_submission and not st.session_state.submitted_ticket:
     st.warning("⚠️ Please confirm your submission before proceeding:")
     
     st.write(f" **Lark Email:** {lark_email}")
@@ -97,36 +82,42 @@ if st.session_state.confirm_submission:
     cancel = st.button("❌ Cancel")
 
     if confirm:
-        # Disable the form fields
+        # Step 1: Disable the form fields and force a UI update
         st.session_state.form_disabled = True
-        
-        ticket_number = f"DAH-{datetime.datetime.now().strftime('%H%M%S')}"
-        submission_time = datetime.datetime.now(ph_tz).strftime('%Y-%m-%d %H:%M:%S')
+        st.rerun()  # Forces Streamlit to refresh and update UI
 
-        # Insert into Supabase
-        data = {
-            "ticket_number": ticket_number,
-            "lark_email": lark_email,
-            "campaign": campaign,
-            "impact": impact,
-            "request": request,
-            "description": description,
-            "priority": priority,
-            "status": "Open",
-            "submission_time": submission_time,
-        }
-        
-        try:
-            response = supabase.table("tickets").insert(data).execute()
-            if response and "error" not in response:
-                st.rerun()
-                st.success(f"✅ Ticket Submitted! 🎫 Your Ticket Number: **{ticket_number}**")
-            else:
-                st.error("❌ Error submitting ticket. Please try again.")
-        except Exception as e:
-            st.error(f"❌ Failed to submit ticket: {str(e)}")
-        
     elif cancel:
         st.warning("Submission cancelled. You can modify the details before submitting again.")
         st.session_state.confirm_submission = False
 
+# Step 2: Insert into Supabase *after* fields are disabled
+if st.session_state.form_disabled and not st.session_state.submitted_ticket:
+    ticket_number = f"DAH-{datetime.datetime.now().strftime('%H%M%S')}"
+    submission_time = datetime.datetime.now(ph_tz).strftime('%Y-%m-%d %H:%M:%S')
+
+    # Insert into Supabase
+    data = {
+        "ticket_number": ticket_number,
+        "lark_email": lark_email,
+        "campaign": campaign,
+        "impact": impact,
+        "request": request,
+        "description": description,
+        "priority": priority,
+        "status": "Open",
+        "submission_time": submission_time,
+    }
+    
+    try:
+        response = supabase.table("tickets").insert(data).execute()
+        if response and "error" not in response:
+            st.session_state.submitted_ticket = ticket_number  # Store ticket number for display
+            st.rerun()  # Rerun to update UI with success message
+        else:
+            st.error("❌ Error submitting ticket. Please try again.")
+    except Exception as e:
+        st.error(f"❌ Failed to submit ticket: {str(e)}")
+
+# Step 3: Show success message after everything is done
+if st.session_state.submitted_ticket:
+    st.success(f"✅ Ticket Submitted! 🎫 Your Ticket Number: **{st.session_state.submitted_ticket}**")
