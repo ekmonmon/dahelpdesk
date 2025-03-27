@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import pytz
-from datetime import datetime
 from supabase import create_client, Client
 
 # Supabase configuration
@@ -13,24 +11,7 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 # Set page title and layout
 st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
 
-st.markdown(
-    """
-    <style>
-        .big-title {text-align: center; font-size: 40px; font-weight: bold; color: #2C3E50; margin-bottom: 15px; padding: 15px; background-color: #ECF0F1; border-radius: 10px;}
-        .summary-card {text-align: center; padding: 15px; border-radius: 10px; color: white; font-size: 22px; font-weight: bold; margin: 5px;}
-        .summary-container {display: flex; flex-wrap: wrap; justify-content: space-around; gap: 10px;}
-        .summary-box {display: flex; flex-direction: column; align-items: center; padding: 10px; width: 100%;}
-        .status-circle {display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px;}
-        .circle-open {background-color: red;}
-        .circle-in-progress {background-color: orange;}
-        .circle-resolved {background-color: green;}
-        .circle-closed {background-color: grey;}
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-st.markdown('<p class="big-title">📌 Data Analyst Helpdesk System</p>', unsafe_allow_html=True)
+st.title("📌 Data Analyst Helpdesk System")
 
 # Load tickets from Supabase
 tickets_response = supabase.table("tickets").select("*").execute()
@@ -98,20 +79,12 @@ else:
         resolved_tickets = len(df[df["status"] == "Resolved"])
         closed_tickets = len(df[df["status"] == "Closed"])
 
-        st.markdown("<h3 style='text-align: center;'>📊 Ticket Summary</h3>", unsafe_allow_html=True)
-        
-        st.markdown(
-            f"""
-            <div class="summary-container">
-                <div class="summary-box" style="background-color: #3498db;">🔹 Total: {total_tickets}</div>
-                <div class="summary-box" style="background-color: #e74c3c;">🔴 Open: {open_tickets}</div>
-                <div class="summary-box" style="background-color: #f39c12;">🟠 In Progress: {in_progress_tickets}</div>
-                <div class="summary-box" style="background-color: #2ecc71;">🟢 Resolved: {resolved_tickets}</div>
-                <div class="summary-box" style="background-color: #7f8c8d;">⚫ Closed: {closed_tickets}</div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        st.write("### Ticket Summary")
+        st.write(f"🟢 **Total Tickets:** {total_tickets}")
+        st.write(f"🔴 **Open Tickets:** {open_tickets}")
+        st.write(f"🟠 **In Progress Tickets:** {in_progress_tickets}")
+        st.write(f"🟢 **Resolved Tickets:** {resolved_tickets}")
+        st.write(f"⚫ **Closed Tickets:** {closed_tickets}")
 
     # Delete all closed tickets
     if st.button("Delete All Closed Tickets", help="Removes all tickets marked as Closed"):
@@ -130,11 +103,8 @@ else:
         description = ticket["description"]
         attachment_url = ticket["attachment"]
         
-        st.markdown(f"""
-            <div style="display: flex; align-items: center;">
-                <b>Ticket #{ticket_number} - {request_type}</b>
-            </div>
-        """, unsafe_allow_html=True)
+        status_color = status_colors.get(status, "black")  # Get color for the status
+        st.markdown(f"<b style='color:{status_color}'>■ Ticket #{ticket_number} - {request_type}</b>", unsafe_allow_html=True)
         
         with st.expander("More Information"):
             st.write(f"**Priority:** {priority}")
