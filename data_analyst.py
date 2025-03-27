@@ -12,19 +12,6 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Set page title and layout
 st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
-st.markdown("""
-    <style>
-        .big-title {text-align: center; font-size: 40px; font-weight: bold; color: #2C3E50; margin-bottom: 15px; padding: 15px; background-color: #ECF0F1; border-radius: 10px;}
-        .subheader {color: #555; font-size: 18px; margin-bottom: 20px;}
-        .card {padding: 15px; margin: 10px 0; border-radius: 8px; background-color: #F4F4F4;}
-        .button-container {display: flex; justify-content: flex-end; margin-top: 10px;}
-        .status-circle {display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px;}
-        .circle-open {background-color: red;}
-        .circle-in-progress {background-color: orange;}
-        .circle-resolved {background-color: green;}
-        .circle-closed {background-color: grey;}
-    </style>
-""", unsafe_allow_html=True)
 
 st.markdown('<p class="big-title">📌 Data Analyst Helpdesk System</p>', unsafe_allow_html=True)
 
@@ -105,9 +92,27 @@ else:
             if attachment_url:
                 st.markdown(f"[Download Attachment]({attachment_url})")
             
-            new_status = st.selectbox("Update Status:", ["Open", "In Progress", "Resolved", "Closed"], index=["Open", "In Progress", "Resolved", "Closed"].index(status), key=f"status_{ticket_number}")
+            # Select new status
+            new_status = st.selectbox(
+                "Update Status:",
+                ["Open", "In Progress", "Resolved", "Closed"],
+                index=["Open", "In Progress", "Resolved", "Closed"].index(status),
+                key=f"status_{ticket_number}"
+            )
             
+            # Button to update ticket status
             if st.button(f"Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
-                supabase.table("tickets").update({"status": new_status}).eq("ticket_number", ticket_number).execute()
-                st.success(f"Ticket {ticket_number} updated to '{new_status}'")
+                # Get current time in UTC and convert to Philippine time
+                utc_now = datetime.utcnow()
+                ph_tz = pytz.timezone("Asia/Manila")
+                ph_now = utc_now.replace(tzinfo=pytz.utc).astimezone(ph_tz)
+                formatted_time = ph_now.strftime("%Y-%m-%d %H:%M:%S")  # Format to YYYY-MM-DD HH:MM:SS
+                
+                # Update ticket status and updated_at timestamp in Supabase
+                supabase.table("tickets").update({
+                    "status": new_status,
+                    "updated_at": formatted_time
+                }).eq("ticket_number", ticket_number).execute()
+                
+                st.success(f"Ticket {ticket_number} updated to '{new_status}' at {formatted_time} (PH Time)")
                 st.rerun()
