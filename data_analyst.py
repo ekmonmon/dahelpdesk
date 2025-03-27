@@ -11,7 +11,16 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Set page title and layout
 st.set_page_config(page_title="Data Analyst Helpdesk", page_icon="📊", layout="wide")
-st.title("📊 Data Analyst Helpdesk - DEVELOPED BY LUIS, DIRECTED BY LUIS, PRODUCED BY LUIS")
+st.markdown("""
+    <style>
+        .big-title {text-align: center; font-size: 32px; font-weight: bold; color: #2E3A87;}
+        .subheader {color: #555; font-size: 18px;}
+        .card {padding: 15px; margin: 10px 0; border-radius: 10px; background-color: #F7F9FC;}
+        .button-container {display: flex; justify-content: flex-end;}
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown('<p class="big-title">📊 Data Analyst Helpdesk</p>', unsafe_allow_html=True)
 
 # Load tickets from Supabase
 tickets_response = supabase.table("tickets").select("*").execute()
@@ -22,10 +31,10 @@ if df.empty:
 else:
     # Sidebar for filtering
     st.sidebar.title("🎯 Ticket Filters")
-    impact_filter = st.sidebar.selectbox("🏢 Filter by Impact:", ["ALL"] + df["impact"].unique().tolist(), index=0)
-    request_filter = st.sidebar.selectbox("📜 Filter by Request Type:", ["ALL"] + df["request"].unique().tolist(), index=0)
-    status_filter = st.sidebar.selectbox("📌 Filter by Status:", ["ALL"] + df["status"].unique().tolist(), index=0)
-    priority_filter = st.sidebar.selectbox("🚀 Filter by Priority:", ["ALL"] + df["priority"].unique().tolist(), index=0)
+    impact_filter = st.sidebar.selectbox("🏢 Filter by Impact:", ["ALL"] + df["impact"].dropna().unique().tolist(), index=0)
+    request_filter = st.sidebar.selectbox("📜 Filter by Request Type:", ["ALL"] + df["request"].dropna().unique().tolist(), index=0)
+    status_filter = st.sidebar.selectbox("📌 Filter by Status:", ["ALL"] + df["status"].dropna().unique().tolist(), index=0)
+    priority_filter = st.sidebar.selectbox("🚀 Filter by Priority:", ["ALL"] + df["priority"].dropna().unique().tolist(), index=0)
     
     # Apply filters
     filtered_df = df.copy()
@@ -43,13 +52,15 @@ else:
     status_counts = df["status"].value_counts().reset_index()
     status_counts.columns = ["Status", "Count"]
     fig = px.pie(status_counts, names="Status", values="Count", title="Ticket Status Distribution", hole=0.4)
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, use_container_width=True)
     
     # Delete all closed tickets
-    if st.button("🗑️ Delete All Closed Tickets"):
+    st.markdown("<div class='button-container'>", unsafe_allow_html=True)
+    if st.button("🗑️ Delete All Closed Tickets", help="Removes all tickets marked as Closed"):
         supabase.table("tickets").delete().eq("status", "Closed").execute()
         st.success("All closed tickets have been deleted!")
         st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
     
     # Ticket list
     st.subheader("📋 Ticket List")
@@ -62,12 +73,16 @@ else:
         attachment_url = ticket["attachment"]
         
         with st.expander(f"🔹 Ticket #{ticket_number} - {request_type}"):
-            st.write(f"**Priority:** {priority}  - DEVELOPED BY LUIS, DIRECTED BY LUIS, PRODUCED BY LUI")
-            st.write(f"**Date Submitted:** {submission_time}  - DEVELOPED BY LUIS, DIRECTED BY LUIS, PRODUCED BY LUI")
-            st.write(f"**Description:** {description}  - DEVELOPED BY LUIS, DIRECTED BY LUIS, PRODUCED BY LUI")
+            st.markdown(f"""
+                <div class="card">
+                    <p><b>📌 Priority:</b> {priority}</p>
+                    <p><b>📅 Date Submitted:</b> {submission_time}</p>
+                    <p><b>📝 Description:</b> {description}</p>
+                </div>
+            """, unsafe_allow_html=True)
             
             if attachment_url:
-                st.markdown(f"[📎 Download Attachment]({attachment_url})  - DEVELOPED BY LUIS, DIRECTED BY LUIS, PRODUCED BY LUI")
+                st.markdown(f"[📎 Download Attachment]({attachment_url})")
             
             new_status = st.selectbox("🔄 Update Status:", ["Open", "In Progress", "Resolved", "Closed"], key=f"status_{ticket_number}")
             if st.button(f"✅ Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
