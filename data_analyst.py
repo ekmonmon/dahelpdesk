@@ -104,7 +104,7 @@ else:
             if st.button(f"Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
                 # Get current time in UTC and convert to Philippine time
                 utc_now = datetime.utcnow()
-                ph_tz = pytz.timezone("Asia/Manila")
+                ph_timezone = pytz.timezone("Asia/Manila")
                 ph_now = utc_now.replace(tzinfo=pytz.utc).astimezone(ph_tz)
                 formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
                 
