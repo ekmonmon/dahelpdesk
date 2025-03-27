@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import pytz
 from datetime import datetime
 from supabase import create_client, Client
 
@@ -100,7 +101,8 @@ else:
             if st.button(f"Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
                 try:
                     # Fix timestamp format
-                    formatted_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    ph_timezone = pytz.timezone("Asia/Manila")
+                    formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
 
                     # Update ticket status in Supabase
                     update_response = supabase.table("tickets").update({
