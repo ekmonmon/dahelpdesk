@@ -99,7 +99,8 @@ if st.session_state.confirm_submission:
     if confirm:
         # Disable the form fields
         st.session_state.form_disabled = True
-
+        st.rerun()
+        
         ticket_number = f"DAH-{datetime.datetime.now().strftime('%H%M%S')}"
         submission_time = datetime.datetime.now(ph_tz).strftime('%Y-%m-%d %H:%M:%S')
 
