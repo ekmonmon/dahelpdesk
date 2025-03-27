@@ -119,8 +119,8 @@ if st.session_state.confirm_submission:
         try:
             response = supabase.table("tickets").insert(data).execute()
             if response and "error" not in response:
-                st.success(f"✅ Ticket Submitted! 🎫 Your Ticket Number: **{ticket_number}**")
                 st.rerun()
+                st.success(f"✅ Ticket Submitted! 🎫 Your Ticket Number: **{ticket_number}**")
             else:
                 st.error("❌ Error submitting ticket. Please try again.")
         except Exception as e:
