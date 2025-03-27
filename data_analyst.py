@@ -106,7 +106,7 @@ else:
                 utc_now = datetime.utcnow()
                 ph_tz = pytz.timezone("Asia/Manila")
                 ph_now = utc_now.replace(tzinfo=pytz.utc).astimezone(ph_tz)
-                formatted_time = ph_now.strftime("%Y-%m-%d %H:%M:%S")  # Format to YYYY-MM-DD HH:MM:SS
+                formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
                 
                 # Update ticket status and updated_at timestamp in Supabase
                 supabase.table("tickets").update({
