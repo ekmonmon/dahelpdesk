@@ -37,25 +37,25 @@ st.markdown("---")
 
 # Form for submitting a ticket
 with st.form("ticket_form"):
-    st.subheader("🗙 Submit a Ticket")
+    st.subheader("Submit a Ticket")
     
-    lark_email = st.text_input("📧 Lark Email:")
-    campaign = st.text_input("📢 Campaign:")
+    lark_email = st.text_input("Lark Email:")
+    campaign = st.text_input("Campaign:")
     
-    impact = st.selectbox("❌ Impact:", ["Data Analyst", "Campaign"])
+    impact = st.selectbox("Impact:", ["Data Analyst", "Campaign"])
     
-    request = st.selectbox("🛠 Request Type:", [
+    request = st.selectbox("Request Type:", [
         "Data Extraction", "Report Issue", "New Report Request",
         "Dashboard Update", "System Issue", "Other"
     ])
     
-    description = st.text_area("🗒 Description:")
+    description = st.text_area("Description:")
     
-    priority = st.selectbox("⚡ Priority:", ["Critical", "High", "Medium", "Low"])
+    priority = st.selectbox("Priority:", ["Critical", "High", "Medium", "Low"])
     
     attachment = st.file_uploader("📎 Attachment (if any):", type=["png", "jpg", "pdf", "csv", "xlsx", "txt"])
     
-    submit_button = st.form_submit_button("🚀 Submit Ticket")
+    submit_button = st.form_submit_button("Submit Ticket")
 
 # When Submit is clicked, trigger confirmation pop-up
 if submit_button:
@@ -68,12 +68,12 @@ if submit_button:
 if st.session_state.confirm_submission:
     st.warning("⚠️ Please confirm your submission before proceeding:")
     
-    st.write(f"📧 **Lark Email:** {lark_email}")
-    st.write(f"📢 **Campaign:** {campaign}")
-    st.write(f"❌ **Impact:** {impact}")
-    st.write(f"🛠 **Request Type:** {request}")
-    st.write(f"⚡ **Priority:** {priority}")
-    st.write(f"🗒 **Description:** {description}")
+    st.write(f" **Lark Email:** {lark_email}")
+    st.write(f" **Campaign:** {campaign}")
+    st.write(f" **Impact:** {impact}")
+    st.write(f" **Request Type:** {request}")
+    st.write(f" **Priority:** {priority}")
+    st.write(f" **Description:** {description}")
     
     confirm = st.button("✅ Confirm Submission")
     cancel = st.button("❌ Cancel")
@@ -121,7 +121,7 @@ if st.session_state.confirm_submission:
             
             if response and "error" not in response:
                 st.success("✅ Ticket Submitted!")
-                st.write("📌 Please wait for a moment, a Data Analyst will come back to you soon.")
+                st.write("Please wait for a moment, a Data Analyst will come back to you soon.")
                 st.write(f"🎫 Your Ticket Number: **{ticket_number}**")
             else:
                 st.error("❌ Error submitting ticket. Please try again.")
