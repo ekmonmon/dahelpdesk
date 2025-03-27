@@ -69,8 +69,11 @@ if st.session_state.confirm_submission:
             filename = f"{timestamp}_{attachment.name}"
             
             try:
+                # Convert UploadedFile to bytes
+                file_bytes = attachment.getvalue()
+                
                 # Upload file directly to Supabase Storage
-                res = supabase.storage.from_("attachments").upload(filename, attachment, {"content-type": attachment.type})
+                res = supabase.storage.from_("attachments").upload(filename, file_bytes, {"content-type": attachment.type})
                 
                 # Check for upload errors
                 if isinstance(res, dict) and "error" in res:
