@@ -32,7 +32,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.title("🎛 Agent Helpdesk - Submit a Ticket")
+st.title("Agent Helpdesk - Submit a Ticket")
 st.markdown("---")
 
 # Form for submitting a ticket
