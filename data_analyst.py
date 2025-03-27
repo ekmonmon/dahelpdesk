@@ -17,15 +17,11 @@ st.markdown("""
         .subheader {color: #555; font-size: 18px; margin-bottom: 20px;}
         .card {padding: 15px; margin: 10px 0; border-radius: 8px; background-color: #F4F4F4;}
         .button-container {display: flex; justify-content: flex-end; margin-top: 10px;}
-        .status-open {color: green; font-weight: bold;}
-        .status-in-progress {color: orange; font-weight: bold;}
-        .status-resolved {color: blue; font-weight: bold;}
-        .status-closed {color: red; font-weight: bold;}
         .status-circle {display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px;}
-        .circle-open {background-color: green;}
+        .circle-open {background-color: red;}
         .circle-in-progress {background-color: orange;}
-        .circle-resolved {background-color: blue;}
-        .circle-closed {background-color: red;}
+        .circle-resolved {background-color: green;}
+        .circle-closed {background-color: grey;}
     </style>
 """, unsafe_allow_html=True)
 
@@ -82,18 +78,11 @@ else:
         description = ticket["description"]
         attachment_url = ticket["attachment"]
         
-        status_class = "status-open" if status == "Open" else "status-in-progress" if status == "In Progress" else "status-resolved" if status == "Resolved" else "status-closed"
         circle_class = "circle-open" if status == "Open" else "circle-in-progress" if status == "In Progress" else "circle-resolved" if status == "Resolved" else "circle-closed"
         
-        expander_title = f"⬤ {status} | Ticket #{ticket_number} - {request_type}"
+        expander_title = f"<span class='status-circle {circle_class}'></span> Ticket #{ticket_number} - {request_type}"
         
-        with st.expander(expander_title):
-            st.markdown(f"""
-                <div>
-                    <b>Status:</b> <span class='{status_class}'>{status}</span>
-                </div>
-            """, unsafe_allow_html=True)
-            
+        with st.expander(expander_title, unsafe_allow_html=True):
             st.markdown(f"""
                 <div class="card">
                     <p><b>Priority:</b> {priority}</p>
