@@ -115,7 +115,7 @@ if st.session_state.confirm_submission:
             "status": "Open",
             "submission_time": submission_time,
         }
-        st.rerun()
+        
         try:
             response = supabase.table("tickets").insert(data).execute()
             if response and "error" not in response:
@@ -128,3 +128,4 @@ if st.session_state.confirm_submission:
     elif cancel:
         st.warning("Submission cancelled. You can modify the details before submitting again.")
         st.session_state.confirm_submission = False
+st.rerun()
