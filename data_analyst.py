@@ -95,8 +95,28 @@ else:
             if attachment_url:
                 st.markdown(f"[Download Attachment]({attachment_url})")
             
-            new_status = st.selectbox("Update Status:", ["Open", "In Progress", "Resolved", "Closed"], key=f"status_{ticket_number}")
+            new_status = st.selectbox("Update Status:", ["Open", "In Progress", "Resolved", "Closed"], index=["Open", "In Progress", "Resolved", "Closed"].index(status), key=f"status_{ticket_number}")
+            
             if st.button(f"Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
-                supabase.table("tickets").update({"status": new_status, "updated_at": datetime.now().isoformat()}).eq("ticket_number", ticket_number).execute()
-                st.success(f"Ticket {ticket_number} updated to '{new_status}'")
-                st.rerun()
+                try:
+                    # Fix timestamp format
+                    formatted_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                    # Update ticket status in Supabase
+                    update_response = supabase.table("tickets").update({
+                        "status": new_status,
+                        "updated_at": formatted_time
+                    }).eq("ticket_number", ticket_number).execute()
+
+                    # Debugging: Print API response
+                    st.write(update_response)
+
+                    # Check for errors in response
+                    if "error" in update_response and update_response["error"]:
+                        st.error(f"Failed to update ticket: {update_response['error']['message']}")
+                    else:
+                        st.success(f"Ticket {ticket_number} updated to '{new_status}'")
+                        st.rerun()
+                
+                except Exception as e:
+                    st.error(f"An error occurred: {e}")
