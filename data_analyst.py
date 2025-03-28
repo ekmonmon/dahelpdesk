@@ -111,15 +111,15 @@ else:
                 background-color: #1E1E1E; 
                 width: 80%;
             ">
-                <table style="width: 100%; text-align: left; font-size: 16px; color: white;">
-                    <tr><td><b>Total Tickets:</b></td><td>{total_tickets}</td></tr>
-                    <tr><td><b>Open:</b></td><td>{status_counts.set_index("Status").get("Open", 0)}</td></tr>
-                    <tr><td><b>In Progress:</b></td><td>{status_counts.set_index("Status").get("In Progress", 0)}</td></tr>
-                    <tr><td><b>Resolved:</b></td><td>{status_counts.set_index("Status").get("Resolved", 0)}</td></tr>
-                    <tr><td><b>Closed:</b></td><td>{status_counts.set_index("Status").get("Closed", 0)}</td></tr>
+                <table style="width: 100%; text-align: left; font-size: 16px; color: white; border-collapse: collapse;">
+                    <tr><td style="color: red;"><b>🟥 Open:</b></td><td>{status_counts.set_index("Status").get("Open", 0)}</td></tr>
+                    <tr><td style="color: orange;"><b>🟧 In Progress:</b></td><td>{status_counts.set_index("Status").get("In Progress", 0)}</td></tr>
+                    <tr><td style="color: green;"><b>🟩 Resolved:</b></td><td>{status_counts.set_index("Status").get("Resolved", 0)}</td></tr>
+                    <tr><td style="color: gray;"><b>⬜ Closed:</b></td><td>{status_counts.set_index("Status").get("Closed", 0)}</td></tr>
                 </table>
             </div>
         """, unsafe_allow_html=True)
+
 
 
     # Delete all closed tickets
