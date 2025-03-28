@@ -61,7 +61,13 @@ else:
     st.subheader("Ticket Status Overview")
 
     # Define custom colors for each status
-
+    status_colors = {
+        "Open": "red",
+        "In Progress": "orange",
+        "Resolved": "green",
+        "Closed": "grey"
+    }
+    
     # Count tickets per status
     status_counts = df["status"].value_counts().reset_index()
     status_counts.columns = ["Status", "Count"]
