@@ -57,7 +57,7 @@ else:
     if search_query:
         filtered_df = filtered_df[filtered_df["ticket_number"].astype(str).str.contains(search_query, case=False, na=False)]
     
-    # Ticket Overview Pie Chart
+    # Ticket Overview: Pie Chart and Status Summary
     st.subheader("Ticket Status Overview")
 
     # Define custom colors for each status
@@ -83,7 +83,15 @@ else:
         color_discrete_map=status_colors  # Assign custom colors
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    # Create two columns: one for the pie chart and one for the summary
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        st.plotly_chart(fig, use_container_width=True)
+    with col2:
+        st.subheader("Status Summary")
+        # Loop through the unique statuses to display their counts
+        for status, count in status_counts.set_index("Status")["Count"].items():
+            st.markdown(f"**{status}:** {count}")
 
     # Delete all closed tickets
     if st.button("Delete All Closed Tickets", help="Removes all tickets marked as Closed"):
