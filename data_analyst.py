@@ -71,6 +71,7 @@ else:
     # Count tickets per status
     status_counts = df["status"].value_counts().reset_index()
     status_counts.columns = ["Status", "Count"]
+    total_tickets = status_counts["Count"].sum()  # Calculate total tickets
 
     # Create pie chart with custom colors
     fig = px.pie(
@@ -83,15 +84,27 @@ else:
         color_discrete_map=status_colors  # Assign custom colors
     )
 
+    # Add total number of tickets in the center
+    fig.update_layout(
+        annotations=[
+            dict(
+                text=f"<b>{total_tickets} Total</b>",
+                x=0.5,
+                y=0.5,
+                font_size=20,
+                showarrow=False
+            )
+        ]
+    )
+
     # Create two columns: one for the pie chart and one for the summary
     col1, col2 = st.columns([2, 1])
     with col1:
         st.plotly_chart(fig, use_container_width=True)
     with col2:
         st.subheader("Status Summary")
-        # Loop through the unique statuses to display their counts
         for status, count in status_counts.set_index("Status")["Count"].items():
-            st.markdown(f"**{status}:** {count}")
+            st.write(f"**{status:<15} {count:>5}**")  # Align status left, numbers right
 
     # Delete all closed tickets
     if st.button("Delete All Closed Tickets", help="Removes all tickets marked as Closed"):
