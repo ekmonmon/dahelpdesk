@@ -97,55 +97,20 @@ else:
         ]
     )
 
-        # Create two columns: one for the pie chart and one for the summary
+    # Create two columns: one for the pie chart and one for the summary
     col1, col2 = st.columns([2, 1])
-
     with col1:
         st.plotly_chart(fig, use_container_width=True)
-
     with col2:
-        # Styled summary section
-        st.markdown(
-            """
-            <div style="
-                padding: 15px; 
-                border-radius: 8px; 
-                background-color: #f8f9fa; 
-                border: 1px solid #d1d5db; 
-                text-align: left;
-            ">
-                <h4 style="color: #2C3E50; margin-bottom: 10px;">Ticket Status Summary</h4>
-                <table style="width: 100%; border-collapse: collapse;">
-                    <tr>
-                        <td style="padding: 5px;">Open</td>
-                        <td style="text-align: right; padding: 5px;"><b>{open_count}</b></td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">In Progress</td>
-                        <td style="text-align: right; padding: 5px;"><b>{in_progress_count}</b></td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">Resolved</td>
-                        <td style="text-align: right; padding: 5px;"><b>{resolved_count}</b></td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">Closed</td>
-                        <td style="text-align: right; padding: 5px;"><b>{closed_count}</b></td>
-                    </tr>
-                </table>
-                <hr style="border: 1px solid #d1d5db; margin: 10px 0;">
-                <h5 style="color: #2C3E50;">Total Tickets: <b>{total_tickets}</b></h5>
-            </div>
-            """.format(
-                open_count=status_counts.set_index("Status").get("Open", 0),
-                in_progress_count=status_counts.set_index("Status").get("In Progress", 0),
-                resolved_count=status_counts.set_index("Status").get("Resolved", 0),
-                closed_count=status_counts.set_index("Status").get("Closed", 0),
-                total_tickets=total_tickets,
-            ),
-            unsafe_allow_html=True
-        )
+        st.subheader("Status Summary")
+        for status, count in status_counts.set_index("Status")["Count"].items():
+            st.write(f"**{status:<15} {count:>5}**")  # Align status left, numbers right
 
+    # Delete all closed tickets
+    if st.button("Delete All Closed Tickets", help="Removes all tickets marked as Closed"):
+        supabase.table("tickets").delete().eq("status", "Closed").execute()
+        st.success("All closed tickets have been deleted!")
+        st.rerun()
     
     # Ticket list
     st.subheader("Ticket List")
