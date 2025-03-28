@@ -102,9 +102,25 @@ else:
     with col1:
         st.plotly_chart(fig, use_container_width=True)
     with col2:
-        st.subheader("Status Summary")
-        for status, count in status_counts.set_index("Status")["Count"].items():
-            st.write(f"**{status:<15} {count:>5}**")  # Align status left, numbers right
+    st.subheader("Status Summary")
+    st.markdown(f"""
+        <div style="
+            border: 2px solid #CCCCCC; 
+            padding: 15px; 
+            border-radius: 8px; 
+            background-color: #1E1E1E; 
+            width: 80%;
+        ">
+            <table style="width: 100%; text-align: left; font-size: 16px; color: white;">
+                <tr><td><b>Total Tickets:</b></td><td>{total_tickets}</td></tr>
+                <tr><td><b>Open:</b></td><td>{status_counts.set_index("Status").get("Open", 0)}</td></tr>
+                <tr><td><b>In Progress:</b></td><td>{status_counts.set_index("Status").get("In Progress", 0)}</td></tr>
+                <tr><td><b>Resolved:</b></td><td>{status_counts.set_index("Status").get("Resolved", 0)}</td></tr>
+                <tr><td><b>Closed:</b></td><td>{status_counts.set_index("Status").get("Closed", 0)}</td></tr>
+            </table>
+        </div>
+    """, unsafe_allow_html=True)
+
 
     # Delete all closed tickets
     if st.button("Delete All Closed Tickets", help="Removes all tickets marked as Closed"):
