@@ -7,7 +7,8 @@ from supabase import create_client, Client
 
 # Supabase configuration
 SUPABASE_URL = "https://twyoryuxgvskitkvauyx.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3eW9yeXV4Z3Zza2l0a3ZhdXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5Njc1MDgsImV4cCI6MjA1ODU0MzUwOH0.P9M25ysxrIOpucNaUKQ-UzExO_MbF2ucTGovVU-uILk"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3eW9yeXV4Z3Zza2l0a3ZhdXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5Njc1MDgsImV4cCI6MjA1ODU0MzUwOH0.P9M25ysxrIOpucNaUKQ-UzExO_MbF2ucTGovVU-uILk
+"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
@@ -76,10 +77,10 @@ else:
     <tr><td style='color: gray;'><b>⬜ Closed:</b></td><td>{closed_count}</td></tr>
     </table>
     """.format(
-        open_count=status_counts.set_index("Status").get("Open", 0),
-        in_progress_count=status_counts.set_index("Status").get("In Progress", 0),
-        resolved_count=status_counts.set_index("Status").get("Resolved", 0),
-        closed_count=status_counts.set_index("Status").get("Closed", 0)
+        open_count=status_counts.set_index("Status").get("Open", {}).get("Count", 0),
+        in_progress_count=status_counts.set_index("Status").get("In Progress", {}).get("Count", 0),
+        resolved_count=status_counts.set_index("Status").get("Resolved", {}).get("Count", 0),
+        closed_count=status_counts.set_index("Status").get("Closed", {}).get("Count", 0)
     )
     st.markdown(summary_html, unsafe_allow_html=True)
     
