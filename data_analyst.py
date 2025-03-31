@@ -98,7 +98,9 @@ else:
         description = ticket["description"]
         attachment_url = ticket["attachment"]
         
-        st.markdown(f"**Ticket #{ticket_number} - {request_type}**")
+        status_icon = {"Open": "🟥", "In Progress": "🟧", "Resolved": "🟩", "Closed": "⬜"}.get(status, "⬜")
+        st.markdown(f"**{status_icon} Ticket #{ticket_number} - {request_type}**")
+        
         with st.expander("More Information"):
             st.write(f"**Priority:** {priority}")
             st.write(f"**Status:** {status}")
