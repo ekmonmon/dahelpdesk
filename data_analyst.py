@@ -86,3 +86,34 @@ else:
         supabase.table("tickets").delete().eq("status", "Closed").execute()
         st.success("All closed tickets have been deleted!")
         st.rerun()
+    
+    # Ticket list
+    st.subheader("Ticket List")
+    for _, ticket in filtered_df.iterrows():
+        ticket_number = ticket["ticket_number"]
+        request_type = ticket["request"]
+        priority = ticket["priority"]
+        status = ticket["status"]
+        submission_time = ticket["submission_time"].replace("T", " ")
+        description = ticket["description"]
+        attachment_url = ticket["attachment"]
+        
+        st.markdown(f"**Ticket #{ticket_number} - {request_type}**")
+        with st.expander("More Information"):
+            st.write(f"**Priority:** {priority}")
+            st.write(f"**Status:** {status}")
+            st.write(f"**Date Submitted:** {submission_time}")
+            st.write(f"**Description:** {description}")
+            
+            if attachment_url:
+                st.markdown(f"[Download Attachment]({attachment_url})")
+            
+            new_status = st.selectbox("Update Status:", ["Open", "In Progress", "Resolved", "Closed"], index=["Open", "In Progress", "Resolved", "Closed"].index(status), key=f"status_{ticket_number}")
+            
+            if st.button(f"Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
+                ph_timezone = pytz.timezone("Asia/Manila")
+                formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
+                
+                supabase.table("tickets").update({"status": new_status, "updated_at": formatted_time}).eq("ticket_number", ticket_number).execute()
+                st.success(f"Ticket {ticket_number} updated to '{new_status}' at {formatted_time} (PH Time)")
+                st.rerun()
