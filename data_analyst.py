@@ -64,23 +64,19 @@ else:
     
     # Status Summary Table (adapts to theme)
     st.subheader("Status Summary")
-    summary_html = """
+    status_dict = status_counts.set_index("Status")["Count"].to_dict()
+    summary_html = f"""
     <style>
-        .summary-table { width: 100%; border-collapse: collapse; }
-        .summary-table td { padding: 10px; border-bottom: 1px solid #ddd; }
+        .summary-table {{ width: 100%; border-collapse: collapse; }}
+        .summary-table td {{ padding: 10px; border-bottom: 1px solid #ddd; }}
     </style>
     <table class='summary-table'>
-    <tr><td style='color: red;'><b>🟥 Open:</b></td><td>{open_count}</td></tr>
-    <tr><td style='color: orange;'><b>🟧 In Progress:</b></td><td>{in_progress_count}</td></tr>
-    <tr><td style='color: green;'><b>🟩 Resolved:</b></td><td>{resolved_count}</td></tr>
-    <tr><td style='color: gray;'><b>⬜ Closed:</b></td><td>{closed_count}</td></tr>
+    <tr><td style='color: red;'><b>🟥 Open:</b></td><td>{status_dict.get("Open", 0)}</td></tr>
+    <tr><td style='color: orange;'><b>🟧 In Progress:</b></td><td>{status_dict.get("In Progress", 0)}</td></tr>
+    <tr><td style='color: green;'><b>🟩 Resolved:</b></td><td>{status_dict.get("Resolved", 0)}</td></tr>
+    <tr><td style='color: gray;'><b>⬜ Closed:</b></td><td>{status_dict.get("Closed", 0)}</td></tr>
     </table>
-    """.format(
-        open_count=status_counts.set_index("Status").get("Open", {}).get("Count", 0),
-        in_progress_count=status_counts.set_index("Status").get("In Progress", {}).get("Count", 0),
-        resolved_count=status_counts.set_index("Status").get("Resolved", {}).get("Count", 0),
-        closed_count=status_counts.set_index("Status").get("Closed", {}).get("Count", 0)
-    )
+    """
     st.markdown(summary_html, unsafe_allow_html=True)
     
     # Delete all closed tickets
