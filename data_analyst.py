@@ -59,25 +59,27 @@ else:
         dict(text=f"<b>{total_tickets} Total</b>", x=0.5, y=0.5, font_size=20, showarrow=False)
     ])
     
-    # Display pie chart
-    st.plotly_chart(fig, use_container_width=True)
-    
-    # Status Summary Table (adapts to theme)
-    st.subheader("Status Summary")
-    status_dict = status_counts.set_index("Status")["Count"].to_dict()
-    summary_html = f"""
-    <style>
-        .summary-table {{ width: 100%; border-collapse: collapse; }}
-        .summary-table td {{ padding: 10px; border-bottom: 1px solid #ddd; }}
-    </style>
-    <table class='summary-table'>
-    <tr><td style='color: red;'><b>🟥 Open:</b></td><td>{status_dict.get("Open", 0)}</td></tr>
-    <tr><td style='color: orange;'><b>🟧 In Progress:</b></td><td>{status_dict.get("In Progress", 0)}</td></tr>
-    <tr><td style='color: green;'><b>🟩 Resolved:</b></td><td>{status_dict.get("Resolved", 0)}</td></tr>
-    <tr><td style='color: gray;'><b>⬜ Closed:</b></td><td>{status_dict.get("Closed", 0)}</td></tr>
-    </table>
-    """
-    st.markdown(summary_html, unsafe_allow_html=True)
+    # Create two columns for layout
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        st.plotly_chart(fig, use_container_width=True)
+    with col2:
+        # Status Summary Table (adapts to theme)
+        st.subheader("Status Summary")
+        status_dict = status_counts.set_index("Status")["Count"].to_dict()
+        summary_html = f"""
+        <style>
+            .summary-table {{ width: 100%; border-collapse: collapse; }}
+            .summary-table td {{ padding: 10px; border-bottom: 1px solid #ddd; }}
+        </style>
+        <table class='summary-table'>
+        <tr><td style='color: red;'><b>🟥 Open:</b></td><td>{status_dict.get("Open", 0)}</td></tr>
+        <tr><td style='color: orange;'><b>🟧 In Progress:</b></td><td>{status_dict.get("In Progress", 0)}</td></tr>
+        <tr><td style='color: green;'><b>🟩 Resolved:</b></td><td>{status_dict.get("Resolved", 0)}</td></tr>
+        <tr><td style='color: gray;'><b>⬜ Closed:</b></td><td>{status_dict.get("Closed", 0)}</td></tr>
+        </table>
+        """
+        st.markdown(summary_html, unsafe_allow_html=True)
     
     # Delete all closed tickets
     if st.button("Delete All Closed Tickets", help="Removes all tickets marked as Closed"):
