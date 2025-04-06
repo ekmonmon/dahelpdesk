@@ -113,7 +113,7 @@ else:
             new_status = st.selectbox("Update Status:", ["Open", "In Progress", "Resolved", "Closed"], index=["Open", "In Progress", "Resolved", "Closed"].index(status), key=f"status_{ticket_number}")
             
            if st.button(f"Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
-                try:
+               try:
                     ph_timezone = pytz.timezone("Asia/Manila")
                     formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
             
@@ -137,4 +137,3 @@ else:
                     import json
                     error_msg = json.dumps(e.args[0], indent=2) if hasattr(e, 'args') and e.args else str(e)
                     st.error(f"🚨 Error updating ticket #{ticket_number}:\n\n```\n{error_msg}\n```")
-            
