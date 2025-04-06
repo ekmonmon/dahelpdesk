@@ -112,10 +112,29 @@ else:
             
             new_status = st.selectbox("Update Status:", ["Open", "In Progress", "Resolved", "Closed"], index=["Open", "In Progress", "Resolved", "Closed"].index(status), key=f"status_{ticket_number}")
             
-            if st.button(f"Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
-                ph_timezone = pytz.timezone("Asia/Manila")
-                formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
-                
-                supabase.table("tickets").update({"status": new_status, "updated_at": formatted_time}).eq("ticket_number", ticket_number).execute()
-                st.success(f"Ticket {ticket_number} updated to '{new_status}' at {formatted_time} (PH Time)")
-                st.rerun()
+           if st.button(f"Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
+    try:
+        ph_timezone = pytz.timezone("Asia/Manila")
+        formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
+
+        # Make sure ticket_number is the correct type
+        ticket_number_casted = int(ticket_number) if isinstance(ticket_number, (int, float, str)) and str(ticket_number).isdigit() else ticket_number
+
+        # Attempt to update the ticket
+        response = supabase.table("tickets").update({
+            "status": new_status,
+            "updated_at": formatted_time
+        }).eq("ticket_number", ticket_number_casted).execute()
+
+        # Optional: Check if update was successful
+        if response.data:
+            st.success(f"Ticket {ticket_number} updated to '{new_status}' at {formatted_time} (PH Time)")
+            st.rerun()
+        else:
+            st.warning(f"No matching ticket found with ticket_number {ticket_number}.")
+
+    except Exception as e:
+        import json
+        error_msg = json.dumps(e.args[0], indent=2) if hasattr(e, 'args') and e.args else str(e)
+        st.error(f"🚨 Error updating ticket #{ticket_number}:\n\n```\n{error_msg}\n```")
+
