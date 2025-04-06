@@ -73,9 +73,9 @@ else:
             .summary-table td {{ padding: 10px; border-bottom: 1px solid #ddd; }}
         </style>
         <table class='summary-table'>
-        <tr><td style='color: red;'><b>🔳 Open:</b></td><td>{status_dict.get("Open", 0)}</td></tr>
-        <tr><td style='color: orange;'><b>🔷 In Progress:</b></td><td>{status_dict.get("In Progress", 0)}</td></tr>
-        <tr><td style='color: green;'><b>🔹 Resolved:</b></td><td>{status_dict.get("Resolved", 0)}</td></tr>
+        <tr><td style='color: red;'><b>🟥 Open:</b></td><td>{status_dict.get("Open", 0)}</td></tr>
+        <tr><td style='color: orange;'><b>🟧 In Progress:</b></td><td>{status_dict.get("In Progress", 0)}</td></tr>
+        <tr><td style='color: green;'><b>🟩 Resolved:</b></td><td>{status_dict.get("Resolved", 0)}</td></tr>
         <tr><td style='color: gray;'><b>⬜ Closed:</b></td><td>{status_dict.get("Closed", 0)}</td></tr>
         </table>
         """
