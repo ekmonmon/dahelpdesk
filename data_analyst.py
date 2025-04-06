@@ -26,7 +26,7 @@ else:
     status_filter = st.sidebar.selectbox("Filter by Status:", ["ALL"] + df["status"].dropna().unique().tolist(), index=0)
     priority_filter = st.sidebar.selectbox("Filter by Priority:", ["ALL"] + df["priority"].dropna().unique().tolist(), index=0)
     search_query = st.sidebar.text_input("Search Ticket Number:")
-    
+
     # Apply filters
     filtered_df = df.copy()
     if impact_filter != "ALL":
@@ -39,26 +39,26 @@ else:
         filtered_df = filtered_df[filtered_df["priority"] == priority_filter]
     if search_query:
         filtered_df = filtered_df[filtered_df["ticket_number"].astype(str).str.contains(search_query, case=False, na=False)]
-    
+
     # Ticket Overview: Pie Chart and Status Summary
     st.subheader("Ticket Status Overview")
-    
+
     # Define custom colors for each status
     status_colors = {"Open": "red", "In Progress": "orange", "Resolved": "green", "Closed": "grey"}
-    
+
     # Count tickets per status (based on filtered data)
     status_counts = filtered_df["status"].value_counts().reset_index()
     status_counts.columns = ["Status", "Count"]
     total_tickets = status_counts["Count"].sum()
-    
+
     # Create pie chart
     fig = px.pie(status_counts, names="Status", values="Count", hole=0.4, color="Status", color_discrete_map=status_colors)
-    
+
     # Remove labels beside the pie chart
     fig.update_layout(showlegend=False, annotations=[
         dict(text=f"<b>{total_tickets} Total</b>", x=0.5, y=0.5, font_size=20, showarrow=False)
     ])
-    
+
     # Create two columns for layout
     col1, col2 = st.columns([2, 1])
     with col1:
@@ -73,20 +73,20 @@ else:
             .summary-table td {{ padding: 10px; border-bottom: 1px solid #ddd; }}
         </style>
         <table class='summary-table'>
-        <tr><td style='color: red;'><b>🟥 Open:</b></td><td>{status_dict.get("Open", 0)}</td></tr>
-        <tr><td style='color: orange;'><b>🟧 In Progress:</b></td><td>{status_dict.get("In Progress", 0)}</td></tr>
-        <tr><td style='color: green;'><b>🟩 Resolved:</b></td><td>{status_dict.get("Resolved", 0)}</td></tr>
+        <tr><td style='color: red;'><b>🔳 Open:</b></td><td>{status_dict.get("Open", 0)}</td></tr>
+        <tr><td style='color: orange;'><b>🔷 In Progress:</b></td><td>{status_dict.get("In Progress", 0)}</td></tr>
+        <tr><td style='color: green;'><b>🔹 Resolved:</b></td><td>{status_dict.get("Resolved", 0)}</td></tr>
         <tr><td style='color: gray;'><b>⬜ Closed:</b></td><td>{status_dict.get("Closed", 0)}</td></tr>
         </table>
         """
         st.markdown(summary_html, unsafe_allow_html=True)
-    
+
     # Delete all closed tickets
     if st.button("Delete All Closed Tickets", help="Removes all tickets marked as Closed"):
         supabase.table("tickets").delete().eq("status", "Closed").execute()
         st.success("All closed tickets have been deleted!")
         st.rerun()
-    
+
     # Ticket list
     st.subheader("Ticket List")
     for _, ticket in filtered_df.iterrows():
@@ -97,43 +97,47 @@ else:
         submission_time = ticket["submission_time"].replace("T", " ")
         description = ticket["description"]
         attachment_url = ticket["attachment"]
-        
+
         status_icon = {"Open": "🟥", "In Progress": "🟧", "Resolved": "🟩", "Closed": "⬜"}.get(status, "⬜")
         st.markdown(f"**{status_icon} Ticket #{ticket_number} - {request_type}**")
-        
+
         with st.expander("More Information"):
             st.write(f"**Priority:** {priority}")
             st.write(f"**Status:** {status}")
             st.write(f"**Date Submitted:** {submission_time}")
             st.write(f"**Description:** {description}")
-            
+
             if attachment_url:
                 st.markdown(f"[Download Attachment]({attachment_url})")
-            
-            new_status = st.selectbox("Update Status:", ["Open", "In Progress", "Resolved", "Closed"], index=["Open", "In Progress", "Resolved", "Closed"].index(status), key=f"status_{ticket_number}")
-            
-           if st.button(f"Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
-               try:
+
+            new_status = st.selectbox(
+                "Update Status:",
+                ["Open", "In Progress", "Resolved", "Closed"],
+                index=["Open", "In Progress", "Resolved", "Closed"].index(status),
+                key=f"status_{ticket_number}"
+            )
+
+            if st.button(f"Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
+                try:
                     ph_timezone = pytz.timezone("Asia/Manila")
                     formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
-            
-                    # Make sure ticket_number is the correct type
+
                     ticket_number_casted = int(ticket_number) if isinstance(ticket_number, (int, float, str)) and str(ticket_number).isdigit() else ticket_number
-            
-                    # Attempt to update the ticket
+
                     response = supabase.table("tickets").update({
                         "status": new_status,
                         "updated_at": formatted_time
                     }).eq("ticket_number", ticket_number_casted).execute()
-            
-                    # Optional: Check if update was successful
+
                     if response.data:
                         st.success(f"Ticket {ticket_number} updated to '{new_status}' at {formatted_time} (PH Time)")
                         st.rerun()
                     else:
                         st.warning(f"No matching ticket found with ticket_number {ticket_number}.")
-            
+
                 except Exception as e:
                     import json
                     error_msg = json.dumps(e.args[0], indent=2) if hasattr(e, 'args') and e.args else str(e)
-                    st.error(f"🚨 Error updating ticket #{ticket_number}:\n\n```\n{error_msg}\n```")
+                    st.error(f"🚨 Error updating ticket #{ticket_number}:\n\n```
+{error_msg}
+```)"
