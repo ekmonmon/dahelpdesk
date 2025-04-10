@@ -4,9 +4,9 @@ import resend
 import os
 
 # === CONFIG ===
-SUPABASE_URL = "https://your-project.supabase.co"
-SUPABASE_KEY = "your-supabase-api-key"
-RESEND_API_KEY = "your-resend-api-key"
+SUPABASE_URL = "https://twyoryuxgvskitkvauyx.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3eW9yeXV4Z3Zza2l0a3ZhdXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5Njc1MDgsImV4cCI6MjA1ODU0MzUwOH0.P9M25ysxrIOpucNaUKQ-UzExO_MbF2ucTGovVU-uILk"
+RESEND_API_KEY = "re_T2dUicvE_6jFXAfJwS8mTbSzkQhdtwLSB"
 TABLE_NAME = "tickets"
 CHECK_INTERVAL = 10  # seconds
 
