@@ -21,7 +21,7 @@ def send_status_email(email: str, status: str, ticket_id: int):
     try:
         response = resend.Emails.send({
             "from": "onboarding@resend.dev",
-            "to": "jackroberto365@gmail.com",
+            "to": {email},
             "subject": f"Ticket #{ticket_id} Status Updated",
             "html": f"<p>Hello,</p><p>The status of your ticket #{ticket_id} has been updated to: <strong>{status}</strong>.</p>"
         })
