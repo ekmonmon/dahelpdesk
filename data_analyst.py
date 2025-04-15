@@ -55,9 +55,7 @@ else:
     fig = px.pie(status_counts, names="Status", values="Count", hole=0.4, color="Status", color_discrete_map=status_colors)
 
     # Remove labels beside the pie chart
-    fig.update_layout(showlegend=False, annotations=[
-        dict(text=f"<b>{total_tickets} Total</b>", x=0.5, y=0.5, font_size=20, showarrow=False)
-    ])
+    fig.update_layout(showlegend=False, annotations=[dict(text=f"<b>{total_tickets} Total</b>", x=0.5, y=0.5, font_size=20, showarrow=False)])
 
     # Create two columns for layout
     col1, col2 = st.columns([2, 1])
@@ -84,7 +82,7 @@ else:
     # Delete all closed tickets
     if st.button("Delete All Closed Tickets", help="Removes all tickets marked as Closed"):
         supabase.table("tickets").delete().eq("status", "Closed").execute()
-        st.success("All closed tickets have been deleted!")
+        st.success("All closed tickets have been deleted! ")
         st.rerun()
 
     # Ticket list
@@ -124,6 +122,7 @@ else:
 
                     ticket_number_casted = int(ticket_number) if isinstance(ticket_number, (int, float, str)) and str(ticket_number).isdigit() else ticket_number
 
+                    # Update ticket status in the tickets table
                     response = supabase.table("tickets").update({
                         "status": new_status,
                         "updated_at": formatted_time
@@ -131,12 +130,22 @@ else:
 
                     if response.data:
                         st.success(f"Ticket {ticket_number} updated to '{new_status}' at {formatted_time} (PH Time)")
+
+                        # Insert a row into the status_notifications table to trigger Edge Function
+                        notification_response = supabase.table("status_notifications").insert({
+                            "ticket_number": ticket_number,
+                            "status": new_status
+                        }).execute()
+
+                        if notification_response.status_code == 200:
+                            st.success(f"Notification sent for ticket {ticket_number} status update.")
+                        else:
+                            st.error("Failed to trigger notification.")
+
                         st.rerun()
                     else:
                         st.warning(f"No matching ticket found with ticket_number {ticket_number}.")
-
                 except Exception as e:
                     import json
                     error_msg = json.dumps(e.args[0], indent=2) if hasattr(e, 'args') and e.args else str(e)
                     st.error(f"🚨 Error updating ticket #{ticket_number}:\n\n```\n{error_msg}\n```")
-
