@@ -7,8 +7,8 @@ import pytz
 ph_tz = pytz.timezone('Asia/Manila')
 
 # Supabase configuration
-SUPABASE_URL = "https://knzfrbcmmrghithnefww.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtuemZyYmNtbXJnaGl0aG5lZnd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NjQwNjgsImV4cCI6MjA2MDM0MDA2OH0.Ub3RaqizMjUER614hov5folNwVjxpya7C8DxluuoANo"
+SUPABASE_URL = "https://twyoryuxgvskitkvauyx.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3eW9yeXV4Z3Zza2l0a3ZhdXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5Njc1MDgsImV4cCI6MjA1ODU0MzUwOH0.P9M25ysxrIOpucNaUKQ-UzExO_MbF2ucTGovVU-uILk"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Initialize session state variables
