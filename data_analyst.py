@@ -137,25 +137,30 @@ else:
                 try:
                     ph_timezone = pytz.timezone("Asia/Manila")
                     formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
-            
+                
+                    # Debug: check ticket number
+                    st.write(f"🔍 Debug: ticket_number = {ticket_number} (type: {type(ticket_number)})")
+                
                     ticket_number_casted = int(ticket_number) if isinstance(ticket_number, (int, float, str)) and str(ticket_number).isdigit() else ticket_number
-            
-                    # Update ticket status in Supabase
+                
+                    st.write(f"🔍 Debug: ticket_number_casted = {ticket_number_casted} (type: {type(ticket_number_casted)})")
+                
+                    # Update ticket
                     response = supabase.table("tickets").update({
                         "status": new_status,
                         "updated_at": formatted_time
                     }).eq("ticket_number", ticket_number_casted).execute()
-            
+                
                     if response.data:
                         st.success(f"Ticket {ticket_number} updated to '{new_status}' at {formatted_time} (PH Time)")
-            
-                        # Optional: Insert into status_notifications table for logging
+                
+                        # Logging into status_notifications
                         supabase.table("status_notifications").insert({
                             "ticket_number": ticket_number,
                             "status": new_status
                         }).execute()
-
-                        # Send Lark notification
+                
+                        # Send Lark message
                         lark_message = {
                             "msg_type": "text",
                             "content": {
@@ -167,22 +172,19 @@ else:
                                 )
                             }
                         }
-
+                
                         lark_response = requests.post(LARK_WEBHOOK_URL, json=lark_message)
-
+                
                         if lark_response.status_code == 200:
                             st.success("📤 Lark notification sent!")
                         else:
-                            st.warning(f"⚠️ Lark webhook failed (status {lark_response.status_code})\nResponse: {lark_response.text}")
-                        
-                        # Add a short delay before rerunning
-                        import time
-                        time.sleep(1)
+                            st.warning(f"⚠️ Lark webhook failed (status {lark_response.status_code})")
+                
                         st.rerun()
                     else:
-                        st.warning(f"No matching ticket found with ticket_number {ticket_number}.")
+                        st.warning(f"❗ No matching ticket found with ticket_number = {ticket_number_casted}")
+                
                 except Exception as e:
                     import traceback
                     error_trace = traceback.format_exc()
                     st.error(f"🚨 Error updating ticket #{ticket_number}:\n\n```\n{error_trace}\n```")
-
