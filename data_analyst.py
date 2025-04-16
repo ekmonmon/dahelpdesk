@@ -2,12 +2,13 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import pytz
+import requests
 from datetime import datetime
 from supabase import create_client, Client
 
 # Supabase configuration
-SUPABASE_URL = "https://twyoryuxgvskitkvauyx.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3eW9yeXV4Z3Zza2l0a3ZhdXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5Njc1MDgsImV4cCI6MjA1ODU0MzUwOH0.P9M25ysxrIOpucNaUKQ-UzExO_MbF2ucTGovVU-uILk"
+SUPABASE_URL = "https://knzfrbcmmrghithnefww.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtuemZyYmNtbXJnaGl0aG5lZnd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NjQwNjgsImV4cCI6MjA2MDM0MDA2OH0.Ub3RaqizMjUER614hov5folNwVjxpya7C8DxluuoANo"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
@@ -119,29 +120,46 @@ else:
                 try:
                     ph_timezone = pytz.timezone("Asia/Manila")
                     formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
-
+            
                     ticket_number_casted = int(ticket_number) if isinstance(ticket_number, (int, float, str)) and str(ticket_number).isdigit() else ticket_number
-
-                    # Update ticket status in the tickets table
+            
+                    # Update ticket status in Supabase
                     response = supabase.table("tickets").update({
                         "status": new_status,
                         "updated_at": formatted_time
                     }).eq("ticket_number", ticket_number_casted).execute()
-
+            
                     if response.data:
                         st.success(f"Ticket {ticket_number} updated to '{new_status}' at {formatted_time} (PH Time)")
-
-                        # Insert a row into the status_notifications table to trigger Edge Function
-                        notification_response = supabase.table("status_notifications").insert({
+            
+                        # Optional: Insert into status_notifications table for logging
+                        supabase.table("status_notifications").insert({
                             "ticket_number": ticket_number,
                             "status": new_status
                         }).execute()
-
-                        if notification_response.status_code == 200:
-                            st.success(f"Notification sent for ticket {ticket_number} status update.")
+                        
+            
+                        LARK_WEBHOOK_URL = "https://open.larksuite.com/open-apis/bot/v2/hook/b6ca6862-ee42-454a-ad5a-c5b34e5fceda"  # Replace this
+            
+                        lark_message = {
+                            "msg_type": "text",
+                            "content": {
+                                "text": (
+                                    f"📢 *Ticket Update Alert*\n"
+                                    f"🎫 Ticket #{ticket_number} has been updated.\n"
+                                    f"📝 New Status: {new_status}\n"
+                                    f"🕒 Updated at: {formatted_time} (PH Time)"
+                                )
+                            }
+                        }
+            
+                        lark_response = requests.post(LARK_WEBHOOK_URL, json=lark_message)
+            
+                        if lark_response.status_code == 200:
+                            st.success("📤 Lark notification sent!")
                         else:
-                            st.error("Failed to trigger notification.")
-
+                            st.warning(f"⚠️ Lark webhook failed (status {lark_response.status_code})")
+            
                         st.rerun()
                     else:
                         st.warning(f"No matching ticket found with ticket_number {ticket_number}.")
@@ -149,3 +167,4 @@ else:
                     import json
                     error_msg = json.dumps(e.args[0], indent=2) if hasattr(e, 'args') and e.args else str(e)
                     st.error(f"🚨 Error updating ticket #{ticket_number}:\n\n```\n{error_msg}\n```")
+
