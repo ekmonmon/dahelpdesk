@@ -7,17 +7,6 @@ import json
 from datetime import datetime
 from supabase import create_client, Client
 
-# Supabase configuration
-SUPABASE_URL = "https://wuugzjctcrysqddghhtk.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1dWd6amN0Y3J5c3FkZGdoaHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NjY2NTcsImV4cCI6MjA2MDM0MjY1N30.JjraFNEpG-CUDqT77pk9KDlMkdsM_sH3alD50gEm1EE"
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
-
-# Load tickets from Supabase
-tickets_response = supabase.table("tickets").select("*").execute()
-df = pd.DataFrame(tickets_response.data)
-
 #---
 if st.button("Send Test Lark Message"):
     test_message = {
@@ -30,6 +19,17 @@ if st.button("Send Test Lark Message"):
     st.text(f"Lark Test Status Code: {r.status_code}")
     st.text(f"Response: {r.text}")
 #---
+
+# Supabase configuration
+SUPABASE_URL = "https://wuugzjctcrysqddghhtk.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1dWd6amN0Y3J5c3FkZGdoaHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NjY2NTcsImV4cCI6MjA2MDM0MjY1N30.JjraFNEpG-CUDqT77pk9KDlMkdsM_sH3alD50gEm1EE"
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
+
+# Load tickets from Supabase
+tickets_response = supabase.table("tickets").select("*").execute()
+df = pd.DataFrame(tickets_response.data)
 
 if df.empty:
     st.warning("No tickets found in the database.")
