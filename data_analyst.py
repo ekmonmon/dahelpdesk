@@ -18,6 +18,19 @@ st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
 tickets_response = supabase.table("tickets").select("*").execute()
 df = pd.DataFrame(tickets_response.data)
 
+#---
+if st.button("Send Test Lark Message"):
+    test_message = {
+        "msg_type": "text",
+        "content": {
+            "text": "✅ Hello from Streamlit! If you see this, the webhook works!"
+        }
+    }
+    r = requests.post(LARK_WEBHOOK_URL, json=test_message)
+    st.text(f"Lark Test Status Code: {r.status_code}")
+    st.text(f"Response: {r.text}")
+#---
+
 if df.empty:
     st.warning("No tickets found in the database.")
 else:
