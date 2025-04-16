@@ -155,10 +155,18 @@ else:
                         st.success(f"Ticket {ticket_number} updated to '{new_status}' at {formatted_time} (PH Time)")
                 
                         # Logging into status_notifications
-                        supabase.table("status_notifications").insert({
-                            "ticket_number": ticket_number,
-                            "status": new_status
-                        }).execute()
+                        try:
+                            log_response = supabase.table("status_notifications").insert({
+                                "ticket_number": ticket_number,
+                                "status": new_status
+                            }).execute()
+                        
+                            st.write("✅ Inserted into status_notifications:", log_response)
+                        
+                        except Exception as insert_error:
+                            import traceback
+                            st.error("🚨 Failed to insert into status_notifications:")
+                            st.code(traceback.format_exc())
                 
                         # Send Lark message
                         lark_message = {
