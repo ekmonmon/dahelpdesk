@@ -44,7 +44,7 @@ def main():
             analyst_run()
         elif role == "agent":
             st.sidebar.write("Agent")
-            from agent import run as agent_run
+            from agent_app import run as agent_run
             agent_run()
 
 # Run the app
