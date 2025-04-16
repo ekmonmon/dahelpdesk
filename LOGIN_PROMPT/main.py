@@ -26,7 +26,7 @@ def login():
             st.session_state.logged_in = True
             st.session_state.user_role = user_data[0]["role"]
             st.success("Login successful. Redirecting...")
-            #st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Invalid credentials. If error persist, please contact an admin.")
 
@@ -34,7 +34,7 @@ def logout():
     st.session_state.logged_in = False
     st.session_state.user_role = None
     st.success("You have been logged out.")
-    st.experimental_rerun()
+    st.rerun()
 
 def main():
     if not st.session_state.logged_in:
