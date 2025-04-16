@@ -16,17 +16,18 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 LARK_WEBHOOK_URL = "https://open.larksuite.com/open-apis/bot/v2/hook/b6ca6862-ee42-454a-ad5a-c5b34e5fceda"
 
-#---
-if st.button("Send Test Lark Message"):
-    test_message = {
-        "msg_type": "text",
-        "content": {
-            "text": "✅ Hello from Streamlit! If you see this, the webhook works!"
-        }
-    }
-    r = requests.post(LARK_WEBHOOK_URL, json=test_message)
-    st.text(f"Lark Test Status Code: {r.status_code}")
-    st.text(f"Response: {r.text}")
+# This is for testing the bot
+#
+#if st.button("Send Test Lark Message"):
+#    test_message = {
+#        "msg_type": "text",
+#        "content": {
+#            "text": "✅ Hello from Streamlit! If you see this, the webhook works!"
+#       }
+#    }
+#    r = requests.post(LARK_WEBHOOK_URL, json=test_message)
+#    st.text(f"Lark Test Status Code: {r.status_code}")
+#    st.text(f"Response: {r.text}")
 #---
 
 # Load tickets from Supabase
@@ -153,10 +154,7 @@ else:
                             "ticket_number": ticket_number,
                             "status": new_status
                         }).execute()
-                        
-            
-                        LARK_WEBHOOK_URL = "https://open.larksuite.com/open-apis/bot/v2/hook/b6ca6862-ee42-454a-ad5a-c5b34e5fceda"
-            
+                       
                         lark_message = {
                             "msg_type": "text",
                             "content": {
