@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 import pytz
 import requests
+import json
 from datetime import datetime
 from supabase import create_client, Client
 
@@ -139,7 +140,7 @@ else:
                         }).execute()
                         
             
-                        LARK_WEBHOOK_URL = "https://open.larksuite.com/open-apis/bot/v2/hook/b6ca6862-ee42-454a-ad5a-c5b34e5fceda"  # Replace this
+                        LARK_WEBHOOK_URL = "https://open.larksuite.com/open-apis/bot/v2/hook/b6ca6862-ee42-454a-ad5a-c5b34e5fceda"
             
                         lark_message = {
                             "msg_type": "text",
@@ -163,8 +164,7 @@ else:
                         st.rerun()
                     else:
                         st.warning(f"No matching ticket found with ticket_number {ticket_number}.")
-                except Exception as e:
-                    import json
-                    error_msg = json.dumps(e.args[0], indent=2) if hasattr(e, 'args') and e.args else str(e)
-                    st.error(f"🚨 Error updating ticket #{ticket_number}:\n\n```\n{error_msg}\n```")
+                    except Exception as e:
+                        error_msg = json.dumps(e.args[0], indent=2) if hasattr(e, 'args') and e.args else str(e)
+                        st.error(f"🚨 Error updating ticket #{ticket_number}:\n\n```\n{error_msg}\n```")
 
