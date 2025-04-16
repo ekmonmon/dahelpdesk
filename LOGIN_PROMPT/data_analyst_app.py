@@ -7,7 +7,7 @@ import json
 from datetime import datetime
 from supabase import create_client, Client
 
-def analyst_dashboard():
+def data_analyst_dashboard():
     st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
 
     # Supabase configuration
