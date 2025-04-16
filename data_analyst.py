@@ -138,12 +138,6 @@ else:
                     ph_timezone = pytz.timezone("Asia/Manila")
                     formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
                 
-                    # Debug: check ticket number
-                    st.write(f"🔍 Debug: ticket_number = {ticket_number} (type: {type(ticket_number)})")
-                
-                    ticket_number_casted = int(ticket_number) if isinstance(ticket_number, (int, float, str)) and str(ticket_number).isdigit() else ticket_number
-                
-                    st.write(f"🔍 Debug: ticket_number_casted = {ticket_number_casted} (type: {type(ticket_number_casted)})")
                 
                     # Update ticket
                     response = supabase.table("tickets").update({
@@ -160,8 +154,6 @@ else:
                                 "ticket_number": ticket_number,
                                 "status": new_status
                             }).execute()
-                        
-                            st.write("✅ Inserted into status_notifications:", log_response)
                         
                         except Exception as insert_error:
                             import traceback
