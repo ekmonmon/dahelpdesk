@@ -137,7 +137,8 @@ else:
                 try:
                     ph_timezone = pytz.timezone("Asia/Manila")
                     formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
-                
+                    
+                    ticket_number_casted = int(ticket_number) if isinstance(ticket_number, (int, float, str)) and str(ticket_number).isdigit() else ticket_number
                 
                     # Update ticket
                     response = supabase.table("tickets").update({
