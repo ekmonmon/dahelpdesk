@@ -163,16 +163,38 @@ else:
                 
                         # Send Lark message
                         lark_message = {
-                            "msg_type": "text",
-                            "content": {
-                                "text": (
-                                    f"Ticket Update Alert\n"
-                                    f"Ticket #**{ticket_number}** has been updated.\n"
-                                    f"New Status: {new_status}\n"
-                                    f"Updated at: {formatted_time} (PH Time)"
-                                )
+                            "msg_type": "interactive",
+                            "card": {
+                                "elements": [
+                                    {
+                                        "tag": "div",
+                                        "text": {
+                                            "content": f"📢 **Ticket Status Update**",
+                                            "tag": "lark_md"
+                                        }
+                                    },
+                                    {
+                                        "tag": "hr"
+                                    },
+                                    {
+                                        "tag": "div",
+                                        "text": {
+                                            "content": f"**Ticket Number:** {ticket_number}\n"
+                                                       f"**Updated Status:** {new_status}\n"
+                                                       f"**Timestamp:** {formatted_time} (PH Time)",
+                                            "tag": "lark_md"
+                                        }
+                                    }
+                                ],
+                                "header": {
+                                    "title": {
+                                        "tag": "plain_text",
+                                        "content": "Ticket Update"
+                                    }
+                                }
                             }
                         }
+
                 
                         lark_response = requests.post(LARK_WEBHOOK_URL, json=lark_message)
                 
