@@ -1,6 +1,6 @@
 import streamlit as st
 from supabase import create_client
-from analyst_app import analyst_dashboard
+from data_analyst_app import data_analyst_dashboard
 from agent_app import agent_dashboard
 
 # 🔐 Supabase credentials
