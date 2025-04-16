@@ -1,6 +1,5 @@
 import streamlit as st
 from supabase import create_client
-import os
 
 # Supabase credentials
 SUPABASE_URL = "https://wuugzjctcrysqddghhtk.supabase.co"
@@ -10,12 +9,25 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 st.set_page_config(page_title="Login", page_icon="🔐")
 st.title("🔐 Login Page")
 
+# Check if already logged in
+query_params = st.experimental_get_query_params()
+if "role" in query_params:
+    role = query_params["role"][0]
+    if role == "analyst":
+        st.success("You are already logged in as Data Analyst.")
+        st.markdown("[Go to Analyst App](https://daappdesk-gmpsthfyqkuabyb7zd3ln6.streamlit.app/)", unsafe_allow_html=True)
+    elif role == "agent":
+        st.success("You are already logged in as Agent.")
+        st.markdown("[Go to Agent App](https://daappdesk-6nbmyk5jvqmwcsd36tuapz.streamlit.app/)", unsafe_allow_html=True)
+    st.stop()
+
+# Login form
 email = st.text_input("Email")
 password = st.text_input("Password", type="password")
 
 if st.button("Login"):
     if not email or not password:
-        st.error("Please enter both email and password.")
+        st.error("Please fill in all fields.")
     else:
         res = supabase.table("users").select("*").eq("email", email).eq("password", password).execute()
         user_data = res.data
@@ -24,18 +36,14 @@ if st.button("Login"):
             role = user_data[0]["role"]
             st.success(f"Welcome, {email}!")
 
-            # Redirect based on role
+            # Add role as query param so we don't re-auth every time
+            st.experimental_set_query_params(role=role)
+
             if role == "analyst":
-                st.markdown(
-                    """<meta http-equiv="refresh" content="1; URL='https://daappdesk-gmpsthfyqkuabyb7zd3ln6.streamlit.app/" />""",
-                    unsafe_allow_html=True
-                )
+                st.markdown("[👉 Go to Analyst App](https://daappdesk-gmpsthfyqkuabyb7zd3ln6.streamlit.app/)", unsafe_allow_html=True)
             elif role == "agent":
-                st.markdown(
-                    """<meta http-equiv="refresh" content="1; URL='https://daappdesk-6nbmyk5jvqmwcsd36tuapz.streamlit.app/" />""",
-                    unsafe_allow_html=True
-                )
+                st.markdown("[👉 Go to Agent App](https://daappdesk-6nbmyk5jvqmwcsd36tuapz.streamlit.app/)", unsafe_allow_html=True)
             else:
-                st.warning("Unrecognized role in system.")
+                st.warning("Role not recognized.")
         else:
             st.error("Invalid email or password.")
