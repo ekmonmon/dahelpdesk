@@ -21,7 +21,7 @@ def login():
             st.session_state.logged_in = True
             st.session_state.user_role = user_data[0]["role"]
             st.success("Login successful. Redirecting...")
-            # No rerun — the next run will go straight to role-based view
+            st.experimental_rerun()  # 🔁 Now it's safe to rerun here
         else:
             st.error("Invalid credentials. If error persist, contact an admin.")
 
