@@ -3,7 +3,7 @@ import datetime
 from supabase import create_client, Client
 import pytz
 
-def agent_dashboard():
+def run():
     # Set timezone to Philippines (UTC+8)
     ph_tz = pytz.timezone('Asia/Manila')
 
