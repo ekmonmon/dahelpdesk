@@ -7,8 +7,9 @@ import json
 from datetime import datetime
 from supabase import create_client, Client
 
-st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
+
 def run():
+    st.title("Data Analyst Helpdesk")
     
     # Supabase configuration
     SUPABASE_URL = "https://wuugzjctcrysqddghhtk.supabase.co"
