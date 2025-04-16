@@ -172,9 +172,9 @@ else:
                                     {
                                         "tag": "div",
                                         "text": {
-                                            "content": f"**Ticket Number:** {ticket_number}\n"
-                                                       f"**Updated Status:** {new_status}\n"
-                                                       f"**Timestamp:** {formatted_time} (PH Time)",
+                                            "content": f"Ticket Number: **{ticket_number}**\n"
+                                                       f"Updated Status: **{new_status}**\n"
+                                                       f"Timestamp: {formatted_time} (PH Time)",
                                             "tag": "lark_md"
                                         }
                                     }
@@ -182,7 +182,7 @@ else:
                                 "header": {
                                     "title": {
                                         "tag": "plain_text",
-                                        "content": f"📢 **Ticket Status Update**",
+                                        "content": f"📢 Ticket Status Update",
                                     }
                                 }
                             }
