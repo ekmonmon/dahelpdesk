@@ -154,7 +154,8 @@ else:
                             "ticket_number": ticket_number,
                             "status": new_status
                         }).execute()
-                       
+
+                        # Send Lark notification
                         lark_message = {
                             "msg_type": "text",
                             "content": {
@@ -166,14 +167,17 @@ else:
                                 )
                             }
                         }
-            
+
                         lark_response = requests.post(LARK_WEBHOOK_URL, json=lark_message)
-            
+
                         if lark_response.status_code == 200:
                             st.success("📤 Lark notification sent!")
                         else:
-                            st.warning(f"⚠️ Lark webhook failed (status {lark_response.status_code})")
-            
+                            st.warning(f"⚠️ Lark webhook failed (status {lark_response.status_code})\nResponse: {lark_response.text}")
+                        
+                        # Add a short delay before rerunning
+                        import time
+                        time.sleep(1)
                         st.rerun()
                     else:
                         st.warning(f"No matching ticket found with ticket_number {ticket_number}.")
