@@ -26,7 +26,7 @@ def login():
             st.session_state.logged_in = True
             st.session_state.user_role = user_data[0]["role"]
             st.success("Login successful. Redirecting...")
-            st.experimental_rerun()
+            #st.experimental_rerun()
         else:
             st.error("Invalid credentials. If error persist, please contact an admin.")
 
