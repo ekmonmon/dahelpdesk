@@ -167,13 +167,6 @@ else:
                             "card": {
                                 "elements": [
                                     {
-                                        "tag": "div",
-                                        "text": {
-                                            "content": f"📢 **Ticket Status Update**",
-                                            "tag": "lark_md"
-                                        }
-                                    },
-                                    {
                                         "tag": "hr"
                                     },
                                     {
@@ -189,7 +182,7 @@ else:
                                 "header": {
                                     "title": {
                                         "tag": "plain_text",
-                                        "content": "Ticket Update"
+                                        "content": f"📢 **Ticket Status Update**",
                                     }
                                 }
                             }
