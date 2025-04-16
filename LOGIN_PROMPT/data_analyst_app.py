@@ -8,7 +8,7 @@ from datetime import datetime
 from supabase import create_client, Client
 
 def run():
-    st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
+    #st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
 
     # Supabase configuration
     SUPABASE_URL = "https://wuugzjctcrysqddghhtk.supabase.co"
