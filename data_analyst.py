@@ -182,6 +182,7 @@ else:
                     else:
                         st.warning(f"No matching ticket found with ticket_number {ticket_number}.")
                 except Exception as e:
-                    error_msg = json.dumps(e.args[0], indent=2) if hasattr(e, 'args') and e.args else str(e)
-                    st.error(f"🚨 Error updating ticket #{ticket_number}:\n\n```\n{error_msg}\n```")
+                    import traceback
+                    error_trace = traceback.format_exc()
+                    st.error(f"🚨 Error updating ticket #{ticket_number}:\n\n```\n{error_trace}\n```")
 
