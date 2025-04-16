@@ -146,7 +146,7 @@ else:
                             "msg_type": "text",
                             "content": {
                                 "text": (
-                                    f"📢 *Ticket Update Alert*\n"
+                                    f"📢 Ticket Update Alert\n"
                                     f"🎫 Ticket #{ticket_number} has been updated.\n"
                                     f"📝 New Status: {new_status}\n"
                                     f"🕒 Updated at: {formatted_time} (PH Time)"
