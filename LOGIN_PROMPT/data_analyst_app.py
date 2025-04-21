@@ -1,15 +1,15 @@
 import streamlit as st
- import pandas as pd
- import plotly.express as px
- import pytz
- import requests
- import json
- from datetime import datetime
- from supabase import create_client, Client
+import pandas as pd
+import plotly.express as px
+import pytz
+import requests
+import json
+from datetime import datetime
+from supabase import create_client, Client
  
- st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
+st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
  
- def run():
+def run():
      st.title("Data Analyst Helpdesk")
  
      # Supabase configuration
