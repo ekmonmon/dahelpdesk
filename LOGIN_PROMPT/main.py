@@ -9,7 +9,7 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 st.markdown("""
     <style>
-    div[data-testid='stToolbar'], ._profileContainer_gzau3_53, ._container_gzau3_1 _viewerBadge_nim44_23 {
+    div[data-testid='stToolbar'], a[class='_profileContainer_gzau3_53'], div[class='_viewerBadge_nim44_23'] {
         display:none;
     }
     </style>
