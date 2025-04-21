@@ -27,7 +27,7 @@ def run():
         div[data-testid='stToolbar'] {
             display:none;
         }
-        button[data-testid="stBaseButton-secondary"]{
+        button[data-testid="stButton"]{
             display:flex;
         }
         </style>
