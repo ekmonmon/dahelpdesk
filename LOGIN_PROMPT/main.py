@@ -62,10 +62,10 @@ def main():
              """,
              unsafe_allow_html=True
          )
-          if st.button("Logout"):
-          # Only use the Streamlit button for logout
-          if st.button("Logout", use_container_width=True):
-              logout()
+     if st.button("Logout"):
+     # Only use the Streamlit button for logout
+     if st.button("Logout", use_container_width=True):
+         logout()
 
      # Run appropriate app based on role
      role = st.session_state.user_role
