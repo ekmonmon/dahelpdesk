@@ -77,19 +77,25 @@ def run():
 
     # Show confirmation pop-up
     if st.session_state.confirm_submission and not st.session_state.submitted_ticket:
-        with st.modal("Please Confirm Submission"):
-            st.write("Are you sure you want to submit this ticket?")
-            confirm = st.button("✅ Confirm")
-            cancel = st.button("❌ Cancel")
-            
+        st.warning("⚠️ Please confirm your submission before proceeding:")
+        
+        st.write(f" **Lark Email:** {lark_email}")
+        st.write(f" **Campaign:** {campaign}")
+        st.write(f" **Impact:** {impact}")
+        st.write(f" **Request Type:** {request}")
+        st.write(f" **Priority:** {priority}")
+        st.write(f" **Description:** {description}")
+        
+        confirm = st.button("✅ Confirm Submission")
+        cancel = st.button("❌ Cancel")
+
         if confirm:
             # Step 1: Disable the form fields and force a UI update
-            st.success("Submitted!")
             st.session_state.form_disabled = True
             st.rerun()  # Forces Streamlit to refresh and update UI
 
         elif cancel:
-            st.info("Submission cancelled. You can modify the details before submitting again.")
+            st.warning("Submission cancelled. You can modify the details before submitting again.")
             st.session_state.confirm_submission = False
 
     # Step 2: Insert into Supabase *after* fields are disabled
@@ -147,4 +153,3 @@ def run():
                 st.session_state.form_disabled = False
                 st.session_state.submitted_ticket = None
                 st.rerun()
-
