@@ -33,7 +33,20 @@ def run():
 
     LARK_WEBHOOK_URL = "https://open.larksuite.com/open-apis/bot/v2/hook/b6ca6862-ee42-454a-ad5a-c5b34e5fceda"
 
-    # Load data from Supabase
+    # Simulate user login for demo purposes
+    # In a real app, this would come from your authentication system
+    current_user = "user1"  # Assuming the logged-in user's ID is 'user1'
+
+    # Load user's assigned campaign from 'users' table (assuming 'assigned_campaign' column)
+    user_campaign_response = supabase.table("users").select("assigned_campaign").eq("user_id", current_user).execute()
+
+    if not user_campaign_response.data:
+        st.warning(f"No campaign assigned to user {current_user}.")
+        return
+
+    user_campaign = user_campaign_response.data[0]["assigned_campaign"]
+
+    # Load tickets from Supabase
     tickets_response = supabase.table("tickets").select("*").execute()
     df = pd.DataFrame(tickets_response.data)
 
@@ -41,18 +54,22 @@ def run():
         st.warning("No tickets found.")
         return
 
-    # Campaign Filter (assuming you have a "campaign" field in your tickets table)
-    campaigns = df['campaign'].unique().tolist()  # Assuming 'campaign' is the field name
+    # Filter tickets by the user's assigned campaign
+    df = df[df['campaign'] == user_campaign]
+
+    # Campaign Filter
+    campaigns = df['campaign'].unique().tolist()
     campaigns.insert(0, "All Campaigns")  # Add an "All Campaigns" option
     selected_campaign = st.selectbox("Filter by Campaign", campaigns)
 
     # Search Bar
     search_query = st.text_input("Search Tickets (by number, request type, or priority)", "")
 
-    # Filter data based on search query and selected campaign
+    # Apply filtering based on campaign selection
     if selected_campaign != "All Campaigns":
         df = df[df['campaign'] == selected_campaign]
 
+    # Apply search filtering
     if search_query:
         df = df[df.apply(lambda row: search_query.lower() in str(row["ticket_number"]).lower() or 
                          search_query.lower() in str(row["request"]).lower() or 
