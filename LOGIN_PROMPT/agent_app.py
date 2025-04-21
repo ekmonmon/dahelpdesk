@@ -119,7 +119,19 @@ def run():
         try:
             response = supabase.table("tickets").insert(data).execute()
             if response and "error" not in response:
-                st.session_state.submitted_ticket = ticket_number  # Store ticket number for display
+               # Store all submitted info in session_state
+                st.session_state.submitted_ticket = ticket_number
+                st.session_state.submitted_data = {
+                    "ticket_number": ticket_number,
+                    "lark_email": lark_email,
+                    "campaign": campaign,
+                    "impact": impact,
+                    "request": request,
+                    "priority": priority,
+                    "description": description,
+                    "submission_time": submission_time,
+                }
+
                 st.rerun()  # Rerun to update UI with success message
             else:
                 st.error("❌ Error submitting ticket. Please try again.")
@@ -131,21 +143,23 @@ def run():
         st.success(f"✅ Ticket Submitted! 🎫 Your Ticket Number: **{st.session_state.submitted_ticket}**")
 
     # Step 4: Show options after successful submission
-    if st.session_state.submitted_ticket:
-        col1, col2 = st.columns([1, 1])
-        
-        with col1:
-            if st.button("📄 View Submitted Response"):
-                st.info(f"""
-                    **Ticket Number:** {st.session_state.submitted_ticket}  
-                    **Lark Email:** {lark_email}  
-                    **Campaign:** {campaign}  
-                    **Impact:** {impact}  
-                    **Request Type:** {request}  
-                    **Priority:** {priority}  
-                    **Description:** {description}  
-                    **Submitted At:** {submission_time}
-                """)
+    if "submitted_data" in st.session_state:
+    col1, col2 = st.columns([1, 1])
+
+    with col1:
+        if st.button("📄 View Submitted Response"):
+            submitted = st.session_state.submitted_data
+            st.info(f"""
+                **Ticket Number:** {submitted['ticket_number']}  
+                **Lark Email:** {submitted['lark_email']}  
+                **Campaign:** {submitted['campaign']}  
+                **Impact:** {submitted['impact']}  
+                **Request Type:** {submitted['request']}  
+                **Priority:** {submitted['priority']}  
+                **Description:** {submitted['description']}  
+                **Submitted At:** {submitted['submission_time']}
+            """)
+
         
         with col2:
             if st.button("📝 Submit Another Ticket"):
