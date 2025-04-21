@@ -129,3 +129,28 @@ def run():
     # Step 3: Show success message after everything is done
     if st.session_state.submitted_ticket:
         st.success(f"✅ Ticket Submitted! 🎫 Your Ticket Number: **{st.session_state.submitted_ticket}**")
+
+    # Step 4: Show options after successful submission
+    if st.session_state.submitted_ticket:
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            if st.button("📄 View Submitted Response"):
+                st.info(f"""
+                    **Ticket Number:** {st.session_state.submitted_ticket}  
+                    **Lark Email:** {lark_email}  
+                    **Campaign:** {campaign}  
+                    **Impact:** {impact}  
+                    **Request Type:** {request}  
+                    **Priority:** {priority}  
+                    **Description:** {description}  
+                    **Submitted At:** {submission_time}
+                """)
+        
+        with col2:
+            if st.button("📝 Submit Another Ticket"):
+                st.session_state.confirm_submission = False
+                st.session_state.form_disabled = False
+                st.session_state.submitted_ticket = None
+                st.rerun()
+
