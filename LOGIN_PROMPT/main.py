@@ -43,7 +43,7 @@ def login():
             st.success("Login successful. Redirecting...")
             st.rerun()
         else:
-@@ -42,28 +34,23 @@ def login():
+            @@ -42,28 +34,23 @@ def login():
 def logout():
     st.session_state.logged_in = False
     st.session_state.user_role = None
