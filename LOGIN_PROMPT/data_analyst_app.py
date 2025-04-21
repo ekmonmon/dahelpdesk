@@ -75,12 +75,14 @@ def run():
             st.plotly_chart(fig, use_container_width=True)
         with col2:
             st.subheader("Status Summary")
+            
+            # Ensure all statuses are in the dictionary, defaulting to 0 if missing
             status_dict = status_counts.set_index("Status")["Count"].to_dict()
-        
+            
             # Debugging: Check the contents of status_dict
             st.write("Status Dictionary: ", status_dict)
         
-            # Prepare the summary HTML
+            # Prepare the summary HTML with safe fallback for missing keys
             try:
                 summary_html = """
                 <style>
@@ -94,15 +96,16 @@ def run():
                 <tr><td style='color: gray;'><b>⬜ Closed:</b></td><td>{}</td></tr>
                 </table>
                 """.format(
-                    status_dict.get("Open", 0),
-                    status_dict.get("In Progress", 0),
-                    status_dict.get("Resolved", 0),
-                    status_dict.get("Closed", 0)
+                    status_dict.get("Open", 0),  # Default to 0 if "Open" doesn't exist
+                    status_dict.get("In Progress", 0),  # Default to 0 if "In Progress" doesn't exist
+                    status_dict.get("Resolved", 0),  # Default to 0 if "Resolved" doesn't exist
+                    status_dict.get("Closed", 0)  # Default to 0 if "Closed" doesn't exist
                 )
                 st.markdown(summary_html, unsafe_allow_html=True)
             except Exception as e:
                 st.error(f"Error generating status summary: {e}")
                 st.write(status_dict)  # Output status_dict for debugging
+
 
 
         with st.expander("Maintenance"):
