@@ -1,2 +1,3 @@
 supabase
 plotly
+streamlit>=1.25.0
