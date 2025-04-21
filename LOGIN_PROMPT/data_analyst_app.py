@@ -76,24 +76,33 @@ def run():
         with col2:
             st.subheader("Status Summary")
             status_dict = status_counts.set_index("Status")["Count"].to_dict()
-            summary_html = """
-            <style>
-                .summary-table { width: 100%; border-collapse: collapse; }
-                .summary-table td { padding: 10px; border-bottom: 1px solid #ddd; }
-            </style>
-            <table class='summary-table'>
-            <tr><td style='color: red;'><b>🟥 Open:</b></td><td>{}</td></tr>
-            <tr><td style='color: orange;'><b>🟧 In Progress:</b></td><td>{}</td></tr>
-            <tr><td style='color: green;'><b>🟩 Resolved:</b></td><td>{}</td></tr>
-            <tr><td style='color: gray;'><b>⬜ Closed:</b></td><td>{}</td></tr>
-            </table>
-            """.format(
-                status_dict.get("Open", 0),
-                status_dict.get("In Progress", 0),
-                status_dict.get("Resolved", 0),
-                status_dict.get("Closed", 0)
-            )
-            st.markdown(summary_html, unsafe_allow_html=True)
+        
+            # Debugging: Check the contents of status_dict
+            st.write("Status Dictionary: ", status_dict)
+        
+            # Prepare the summary HTML
+            try:
+                summary_html = """
+                <style>
+                    .summary-table { width: 100%; border-collapse: collapse; }
+                    .summary-table td { padding: 10px; border-bottom: 1px solid #ddd; }
+                </style>
+                <table class='summary-table'>
+                <tr><td style='color: red;'><b>🟥 Open:</b></td><td>{}</td></tr>
+                <tr><td style='color: orange;'><b>🟧 In Progress:</b></td><td>{}</td></tr>
+                <tr><td style='color: green;'><b>🟩 Resolved:</b></td><td>{}</td></tr>
+                <tr><td style='color: gray;'><b>⬜ Closed:</b></td><td>{}</td></tr>
+                </table>
+                """.format(
+                    status_dict.get("Open", 0),
+                    status_dict.get("In Progress", 0),
+                    status_dict.get("Resolved", 0),
+                    status_dict.get("Closed", 0)
+                )
+                st.markdown(summary_html, unsafe_allow_html=True)
+            except Exception as e:
+                st.error(f"Error generating status summary: {e}")
+                st.write(status_dict)  # Output status_dict for debugging
 
 
         with st.expander("Maintenance"):
