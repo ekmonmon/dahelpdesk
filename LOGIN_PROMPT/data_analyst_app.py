@@ -7,11 +7,10 @@ SUPABASE_URL = "https://wuugzjctcrysqddghhtk.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1dWd6amN0Y3J5c3FkZGdoaHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NjY2NTcsImV4cCI6MjA2MDM0MjY1N30.JjraFNEpG-CUDqT77pk9KDlMkdsM_sH3alD50gEm1EE"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# App entry point for the data analyst dashboard
 def run():
     st.title("📊 Data Analyst Helpdesk")
 
-    # Get the campaigns assigned to the current user
+    # Get the campaigns assigned to the current user (data analyst)
     assigned_campaigns = st.session_state.user_campaigns
     if not assigned_campaigns:
         st.error("You are not assigned to any campaigns.")
@@ -57,4 +56,3 @@ def run():
                     st.markdown(f"**Description:** {ticket['description']}")
                     if ticket['attachment']:
                         st.markdown(f"[📎 Download Attachment]({ticket['attachment']})")
-
