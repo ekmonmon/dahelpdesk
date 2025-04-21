@@ -28,7 +28,7 @@ def run():
 
     # Supabase config
     SUPABASE_URL = "https://wuugzjctcrysqddghhtk.supabase.co"
-    SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1dWd6amN0Y3J5c3FkZGdoaHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NjY2NTcsImV4cCI6MjA2MDM0MjY1N30.JjraFNEpG-CUDqT77pk9KDlMkdsM_sH3alD50gEm1EE"
+    SUPABASE_KEY = "your_supabase_key_here"
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
     LARK_WEBHOOK_URL = "https://open.larksuite.com/open-apis/bot/v2/hook/b6ca6862-ee42-454a-ad5a-c5b34e5fceda"
@@ -84,14 +84,12 @@ def run():
                 badge_color = {"High": "red", "Medium": "orange", "Low": "green"}.get(priority, "gray")
 
                 with st.container():
-                    # Enhanced Information Section
                     st.markdown(
                         f"<h5 style='margin-bottom:0;'>Ticket #{ticket_number} - <i>{request_type}</i></h5>",
                         unsafe_allow_html=True
                     )
 
                     with st.expander("Information"):
-                        # Using markdown for better formatting
                         col1, col2 = st.columns([3, 2])
                         with col1:
                             st.markdown(f"**Submitted On:** {submission_time}")
@@ -105,19 +103,15 @@ def run():
                                 f"**Current Status:** {status}",
                                 unsafe_allow_html=True
                             )
+
                             new_status = st.selectbox(
                                 "Update Status:",
                                 status_tabs,
                                 index=status_tabs.index(status),
-                                key=f"status_{ticket_number}"
-                            )
-                            st.button(
-                                f"Update Ticket #{ticket_number}",
-                                key=f"update_{ticket_number}"
+                                key=f"status_select_{ticket_number}"
                             )
 
-
-                            if st.button(f"Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
+                            if st.button(f"Update Ticket #{ticket_number}", key=f"update_btn_{ticket_number}"):
                                 try:
                                     ph_timezone = pytz.timezone("Asia/Manila")
                                     formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
