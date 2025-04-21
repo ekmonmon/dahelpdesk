@@ -27,9 +27,6 @@ def run():
         div[data-testid='stToolbar'] {
             display:none;
         }
-        button[data-testid="stButton"]{
-            display:flex;
-        }
         </style>
     """, unsafe_allow_html=True)
 
