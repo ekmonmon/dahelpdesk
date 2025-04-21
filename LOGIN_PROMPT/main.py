@@ -26,8 +26,8 @@ def login():
             st.session_state.logged_in = True
             st.session_state.user_role = user_data[0]["role"]
             st.session_state.user_campaigns = user_data[0]["assigned_campaign"]  # Store the campaigns
-            st.success("Login successful. Redirecting...")
-            st.rerun()
+            st.success("Login successful!")
+            st.experimental_rerun()  # Rerun the app after setting session state
         else:
             st.error("Invalid credentials. If error persists, please contact an admin.")
 
@@ -36,7 +36,6 @@ def logout():
     st.session_state.user_role = None
     st.session_state.user_campaigns = []
     st.success("You have been logged out.")
-    st.rerun()
 
 def main():
     if not st.session_state.logged_in:
@@ -51,6 +50,9 @@ def main():
         if st.session_state.user_role == "analyst":
             import data_analyst_app
             data_analyst_app.run()  # Call the data analyst dashboard
+        elif st.session_state.user_role == "agent":
+            import agent_app
+            agent_app.run()  # Call the agent dashboard
 
 if __name__ == "__main__":
     main()
