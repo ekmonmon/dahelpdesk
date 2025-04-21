@@ -9,18 +9,6 @@ st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
 
 # App entry point
 def run():
-    # Top-right logout button using columns
-    col1, col2, col3 = st.columns([6, 1, 1])
-    with col3:
-        st.markdown(
-            """
-            <form action="/logout">
-                <input type="submit" value="Logout" style="padding: 6px 12px; border-radius: 5px; background-color: #e74c3c; color: white; border: none; cursor: pointer;">
-            </form>
-            """,
-            unsafe_allow_html=True
-        )
-
     st.title("📊 Data Analyst Helpdesk")
 
     # Supabase config
