@@ -41,8 +41,17 @@ def run():
         st.warning("No tickets found.")
         return
 
+    # Campaign Filter (assuming you have a "campaign" field in your tickets table)
+    campaigns = df['campaign'].unique().tolist()  # Assuming 'campaign' is the field name
+    campaigns.insert(0, "All Campaigns")  # Add an "All Campaigns" option
+    selected_campaign = st.selectbox("Filter by Campaign", campaigns)
+
     # Search Bar
-    search_query = st.text_input("Search Ticket Number", "")
+    search_query = st.text_input("Search Tickets (by number, request type, or priority)", "")
+
+    # Filter data based on search query and selected campaign
+    if selected_campaign != "All Campaigns":
+        df = df[df['campaign'] == selected_campaign]
 
     if search_query:
         df = df[df.apply(lambda row: search_query.lower() in str(row["ticket_number"]).lower() or 
@@ -50,7 +59,7 @@ def run():
                          search_query.lower() in str(row["priority"]).lower(), axis=1)]
 
     if df.empty:
-        st.warning(f"No tickets found for search query: **{search_query}**.")
+        st.warning(f"No tickets found for search query: **{search_query}** and campaign: **{selected_campaign}**.")
         return
 
     # Status tabs
