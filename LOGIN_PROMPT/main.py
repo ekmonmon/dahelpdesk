@@ -52,17 +52,8 @@ def main():
         # Top-right logout button using columns
         col1, col2, col3 = st.columns([6, 1, 1])
         with col3:
-            st.markdown(
-                """
-                <div style="text-align: right;">
-                    <form>
-                        <input type="submit" value="Logout" style="padding: 6px 12px; border-radius: 5px; background-color: #e74c3c; color: white; border: none; cursor: pointer;" onclick="logout()" />
-                    </form>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            if st.button("Logout"):
+            # Only use the Streamlit button for logout
+            if st.button("Logout", use_container_width=True):
                 logout()
 
         # Run appropriate app based on role
