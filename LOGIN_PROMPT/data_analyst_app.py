@@ -7,8 +7,9 @@ import json
 from datetime import datetime
 from supabase import create_client, Client
 
+st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
+
 def run():
-    st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
     st.title("📊 Data Analyst Helpdesk")
 
     # Hard-coded Supabase credentials
