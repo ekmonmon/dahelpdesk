@@ -13,18 +13,9 @@ st.markdown("""
     div[data-testid="stToolbar"] {
         display: none !important;
     }
-
-    /* Hide elements where class includes 'profileContainer' */
-    div[class*="profileContainer"] {
-        display: none !important;
-    }
-
-    /* Hide elements where class includes 'viewerBadge' */
-    div[class*="viewerBadge"] {
-        display: none !important;
-    }
     </style>
 """, unsafe_allow_html=True)
+
 # Initialize session state
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
