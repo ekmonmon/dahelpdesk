@@ -85,30 +85,37 @@ def run():
 
                 with st.container():
                     # Enhanced Information Section
-                    st.markdown(f"### Ticket #{ticket_number} - *{request_type}*")
+                    st.markdown(
+                        f"<h5 style='margin-bottom:0;'>Ticket #{ticket_number} - <i>{request_type}</i></h5>",
+                        unsafe_allow_html=True
+                    )
+
                     with st.expander("Information"):
                         # Using markdown for better formatting
-                        st.markdown(f"**Submitted On:** {submission_time}")
-                        st.markdown(f"**Description:** {description}")
-                        if attachment_url:
-                            st.markdown(f"[📎 Download Attachment]({attachment_url})")
-
-                        # Layout for priority and status
-                        col1, col2 = st.columns(2)
+                        col1, col2 = st.columns([3, 2])
                         with col1:
+                            st.markdown(f"**Submitted On:** {submission_time}")
+                            st.markdown(f"**Description:** {description}")
+                            if attachment_url:
+                                st.markdown(f"[📎 Download Attachment]({attachment_url})")
+                        
+                        with col2:
                             st.markdown(
-                                f"**Priority:** <span style='color:{badge_color}; font-weight:bold'>{priority}</span>",
+                                f"**Priority:** <span style='color:{badge_color}; font-weight:bold'>{priority}</span><br>"
+                                f"**Current Status:** {status}",
                                 unsafe_allow_html=True
                             )
-                            st.markdown(f"**Status:** {status}")
-
-                        with col2:
                             new_status = st.selectbox(
                                 "Update Status:",
                                 status_tabs,
                                 index=status_tabs.index(status),
                                 key=f"status_{ticket_number}"
                             )
+                            st.button(
+                                f"Update Ticket #{ticket_number}",
+                                key=f"update_{ticket_number}"
+                            )
+
 
                             if st.button(f"Update Ticket #{ticket_number}", key=f"update_{ticket_number}"):
                                 try:
