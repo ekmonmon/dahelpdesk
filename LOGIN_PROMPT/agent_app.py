@@ -19,9 +19,16 @@ def run():
         st.session_state.form_disabled = False  # Controls form editability
     if "submitted_ticket" not in st.session_state:
         st.session_state.submitted_ticket = None  # Stores ticket number after submission
-
+    
     st.title("Agent Helpdesk - Submit a Ticket")
     st.markdown("---")
+    st.markdown("""
+        <style>
+        div[data-testid='stToolbar'] {
+            display:none;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
     # Form for submitting a ticket
     with st.form("ticket_form"):
