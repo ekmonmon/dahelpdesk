@@ -1,14 +1,14 @@
 import streamlit as st
- import pandas as pd
- import requests
- from datetime import datetime
- import pytz
- from supabase import create_client, Client
+import pandas as pd
+import requests
+from datetime import datetime
+import pytz
+from supabase import create_client, Client
  
  # Set page layout and custom CSS for font size reduction
- st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
+st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
  
- st.markdown("""
+st.markdown("""
      <style>
          body {
              font-size: 12px !important;
