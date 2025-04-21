@@ -42,7 +42,7 @@ def run():
         return
 
     # Search Bar
-    search_query = st.text_input("Search Tickets (by number, request type, or priority)", "")
+    search_query = st.text_input("Search Ticket Number", "")
 
     if search_query:
         df = df[df.apply(lambda row: search_query.lower() in str(row["ticket_number"]).lower() or 
