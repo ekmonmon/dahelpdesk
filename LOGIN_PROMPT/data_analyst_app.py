@@ -82,18 +82,19 @@ def run():
                 .summary-table td { padding: 10px; border-bottom: 1px solid #ddd; }
             </style>
             <table class='summary-table'>
-            <tr><td style='color: red;'><b>🟥 Open:</b></td><td>{open}</td></tr>
-            <tr><td style='color: orange;'><b>🟧 In Progress:</b></td><td>{progress}</td></tr>
-            <tr><td style='color: green;'><b>🟩 Resolved:</b></td><td>{resolved}</td></tr>
-            <tr><td style='color: gray;'><b>⬜ Closed:</b></td><td>{closed}</td></tr>
+            <tr><td style='color: red;'><b>🟥 Open:</b></td><td>{}</td></tr>
+            <tr><td style='color: orange;'><b>🟧 In Progress:</b></td><td>{}</td></tr>
+            <tr><td style='color: green;'><b>🟩 Resolved:</b></td><td>{}</td></tr>
+            <tr><td style='color: gray;'><b>⬜ Closed:</b></td><td>{}</td></tr>
             </table>
             """.format(
-                open=status_dict.get("Open", 0),
-                progress=status_dict.get("In Progress", 0),
-                resolved=status_dict.get("Resolved", 0),
-                closed=status_dict.get("Closed", 0)
+                status_dict.get("Open", 0),
+                status_dict.get("In Progress", 0),
+                status_dict.get("Resolved", 0),
+                status_dict.get("Closed", 0)
             )
             st.markdown(summary_html, unsafe_allow_html=True)
+
 
         with st.expander("Maintenance"):
             if st.button("Delete All Closed Tickets", help="Removes all tickets marked as Closed"):
