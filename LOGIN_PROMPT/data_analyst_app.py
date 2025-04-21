@@ -74,8 +74,8 @@ def run():
             status_dict = status_counts.set_index("Status")["Count"].to_dict()
             summary_html = """
             <style>
-                .summary-table { width: 100%; border-collapse: collapse; }
-                .summary-table td { padding: 10px; border-bottom: 1px solid #ddd; }
+                .summary-table {{ width: 100%; border-collapse: collapse; }}
+                .summary-table td {{ padding: 10px; border-bottom: 1px solid #ddd; }}
             </style>
             <table class='summary-table'>
             <tr><td style='color: red;'><b>🟥 Open:</b></td><td>{open}</td></tr>
@@ -89,6 +89,7 @@ def run():
                 resolved=status_dict.get("Resolved", 0),
                 closed=status_dict.get("Closed", 0)
             )
+
             st.markdown(summary_html, unsafe_allow_html=True)
 
         with st.expander("Maintenance"):
