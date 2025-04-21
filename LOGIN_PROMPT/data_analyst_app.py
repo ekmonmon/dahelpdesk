@@ -75,36 +75,35 @@ def run():
             st.plotly_chart(fig, use_container_width=True)
         with col2:
             st.subheader("Status Summary")
-            
+        
             # Ensure all statuses are in the dictionary, defaulting to 0 if missing
             status_dict = status_counts.set_index("Status")["Count"].to_dict()
             
             # Debugging: Check the contents of status_dict
             st.write("Status Dictionary: ", status_dict)
         
-            # Prepare the summary HTML with safe fallback for missing keys
-            try:
-                summary_html = """
-                <style>
-                    .summary-table { width: 100%; border-collapse: collapse; }
-                    .summary-table td { padding: 10px; border-bottom: 1px solid #ddd; }
-                </style>
-                <table class='summary-table'>
-                <tr><td style='color: red;'><b>🟥 Open:</b></td><td>{}</td></tr>
-                <tr><td style='color: orange;'><b>🟧 In Progress:</b></td><td>{}</td></tr>
-                <tr><td style='color: green;'><b>🟩 Resolved:</b></td><td>{}</td></tr>
-                <tr><td style='color: gray;'><b>⬜ Closed:</b></td><td>{}</td></tr>
-                </table>
-                """.format(
-                    status_dict.get("Open", 0),  # Default to 0 if "Open" doesn't exist
-                    status_dict.get("In Progress", 0),  # Default to 0 if "In Progress" doesn't exist
-                    status_dict.get("Resolved", 0),  # Default to 0 if "Resolved" doesn't exist
-                    status_dict.get("Closed", 0)  # Default to 0 if "Closed" doesn't exist
-                )
-                st.markdown(summary_html, unsafe_allow_html=True)
-            except Exception as e:
-                st.error(f"Error generating status summary: {e}")
-                st.write(status_dict)  # Output status_dict for debugging
+            # Prepare the summary HTML manually
+            summary_html = """
+            <style>
+                .summary-table { width: 100%; border-collapse: collapse; }
+                .summary-table td { padding: 10px; border-bottom: 1px solid #ddd; }
+            </style>
+            <table class='summary-table'>
+                <tr><td style='color: red;'><b>🟥 Open:</b></td><td>{open}</td></tr>
+                <tr><td style='color: orange;'><b>🟧 In Progress:</b></td><td>{in_progress}</td></tr>
+                <tr><td style='color: green;'><b>🟩 Resolved:</b></td><td>{resolved}</td></tr>
+                <tr><td style='color: gray;'><b>⬜ Closed:</b></td><td>{closed}</td></tr>
+            </table>
+            """.format(
+                open=status_dict.get("Open", 0),  # Default to 0 if "Open" doesn't exist
+                in_progress=status_dict.get("In Progress", 0),  # Default to 0 if "In Progress" doesn't exist
+                resolved=status_dict.get("Resolved", 0),  # Default to 0 if "Resolved" doesn't exist
+                closed=status_dict.get("Closed", 0)  # Default to 0 if "Closed" doesn't exist
+            )
+        
+            # Display the table
+            st.markdown(summary_html, unsafe_allow_html=True)
+
 
 
 
