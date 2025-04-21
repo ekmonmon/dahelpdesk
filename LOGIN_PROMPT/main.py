@@ -1,22 +1,9 @@
 import streamlit as st
-from supabase import create_client
-from data_analyst_app import run as analyst_run
-from agent_app import run as agent_run
 from supabase import create_client, Client
 
 # Supabase credentials
 SUPABASE_URL = "https://wuugzjctcrysqddghhtk.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1dWd6amN0Y3J5c3FkZGdoaHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NjY2NTcsImV4cCI6MjA2MDM0MjY1N30.JjraFNEpG-CUDqT77pk9KDlMkdsM_sH3alD50gEm1EE"
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-# Hide Streamlit toolbar
-st.markdown("""
-    <style>
-    div[data-testid="stToolbar"] {
-        display: none !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Initialize session state
@@ -31,7 +18,6 @@ def login():
     password = st.text_input("Password", type="password")
 
     if st.button("Login"):
-        res = supabase.table("users").select("*").eq("email", email).eq("password", password).execute()
         # Get user data from the database
         res = supabase.table("users").select("role", "assigned_campaign").eq("email", email).eq("password", password).execute()
         user_data = res.data
@@ -43,7 +29,8 @@ def login():
             st.success("Login successful. Redirecting...")
             st.rerun()
         else:
-            def login():
+            st.error("Invalid credentials. If error persists, please contact an admin.")
+
 def logout():
     st.session_state.logged_in = False
     st.session_state.user_role = None
@@ -55,23 +42,11 @@ def main():
     if not st.session_state.logged_in:
         login()
     else:
-        # Top-right logout button using columns
         # Top-right logout button
         col1, col2, col3 = st.columns([6, 1, 1])
         with col3:
-            # Only use the Streamlit button for logout
-            if st.button("Logout", use_container_width=True):
-                logout()
             st.button("Logout", on_click=logout)
 
-        # Run appropriate app based on role
-        role = st.session_state.user_role
-        if role == "analyst":
-            analyst_run()
-        elif role == "agent":
-            agent_run()
-        else:
-            st.error("Unknown role.")
         # Run the appropriate app based on the user role
         if st.session_state.user_role == "analyst":
             import data_analyst_app
