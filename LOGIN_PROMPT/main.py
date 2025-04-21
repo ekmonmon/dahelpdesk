@@ -7,9 +7,10 @@ from agent_app import run as agent_run
 SUPABASE_URL = "https://wuugzjctcrysqddghhtk.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1dWd6amN0Y3J5c3FkZGdoaHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NjY2NTcsImV4cCI6MjA2MDM0MjY1N30.JjraFNEpG-CUDqT77pk9KDlMkdsM_sH3alD50gEm1EE"
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# Hide Streamlit toolbar
 st.markdown("""
     <style>
-    /* Hide Toolbar */
     div[data-testid="stToolbar"] {
         display: none !important;
     }
@@ -36,7 +37,7 @@ def login():
             st.success("Login successful. Redirecting...")
             st.rerun()
         else:
-            st.error("Invalid credentials. If error persist, please contact an admin.")
+            st.error("Invalid credentials. If error persists, please contact an admin.")
 
 def logout():
     st.session_state.logged_in = False
@@ -48,9 +49,19 @@ def main():
     if not st.session_state.logged_in:
         login()
     else:
-        # Add logout button at the top right
-        with st.sidebar:
-            st.markdown("### Settings")
+        # Top-right logout button using columns
+        col1, col2, col3 = st.columns([6, 1, 1])
+        with col3:
+            st.markdown(
+                """
+                <div style="text-align: right;">
+                    <form>
+                        <input type="submit" value="Logout" style="padding: 6px 12px; border-radius: 5px; background-color: #e74c3c; color: white; border: none; cursor: pointer;" onclick="logout()" />
+                    </form>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
             if st.button("Logout"):
                 logout()
 
