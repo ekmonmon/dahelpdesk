@@ -5,7 +5,22 @@ from datetime import datetime
 import pytz
 from supabase import create_client, Client
 
+# Set page layout and custom CSS for font size reduction
 st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
+
+st.markdown("""
+    <style>
+        body {
+            font-size: 12px !important;
+        }
+        .stButton>button {
+            font-size: 12px !important;
+        }
+        .stTextInput>div>div>input {
+            font-size: 12px !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 # App entry point
 def run():
@@ -18,12 +33,24 @@ def run():
 
     LARK_WEBHOOK_URL = "https://open.larksuite.com/open-apis/bot/v2/hook/b6ca6862-ee42-454a-ad5a-c5b34e5fceda"
 
-    # Load data
+    # Load data from Supabase
     tickets_response = supabase.table("tickets").select("*").execute()
     df = pd.DataFrame(tickets_response.data)
 
     if df.empty:
         st.warning("No tickets found.")
+        return
+
+    # Search Bar
+    search_query = st.text_input("Search Tickets (by number, request type, or priority)", "")
+
+    if search_query:
+        df = df[df.apply(lambda row: search_query.lower() in str(row["ticket_number"]).lower() or 
+                         search_query.lower() in str(row["request"]).lower() or 
+                         search_query.lower() in str(row["priority"]).lower(), axis=1)]
+
+    if df.empty:
+        st.warning(f"No tickets found for search query: **{search_query}**.")
         return
 
     # Status tabs
