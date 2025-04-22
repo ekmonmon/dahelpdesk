@@ -84,12 +84,7 @@ def run():
                 badge_color = {"High": "red", "Medium": "orange", "Low": "green"}.get(priority, "gray")
 
                 with st.container():
-                    st.markdown(
-                        f"<h5 style='margin-bottom:0;'>Ticket #{ticket_number} - <i>{request_type}</i></h5>",
-                        unsafe_allow_html=True
-                    )
-
-                    with st.expander("Information"):
+                    with st.expander(f"Ticket #{ticket_number} - *{request_type}*"):
                         col1, col2 = st.columns([3, 2])
                         with col1:
                             st.markdown(f"**Submitted On:** {submission_time}")
