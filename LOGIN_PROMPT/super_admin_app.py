@@ -80,9 +80,13 @@ def run():
     with tab2:
         st.subheader("Create or Update User")
     
+        # Initialize session state to clear password field
+        if "password" not in st.session_state:
+            st.session_state.password = ""  # Reset password field
+    
         # Input fields
         email = st.text_input("User Email")
-        password = st.text_input("Password", type="password")  # Password field without default value
+        password = st.text_input("Password", type="password", value=st.session_state.password)  # Password field without default value
         role = st.selectbox("Role", ["agent", "analyst", "super_admin"])
     
         if st.button("Create/Update User"):
@@ -97,6 +101,9 @@ def run():
                 supabase.table("users").insert({"email": email, "password": password, "role": role}).execute()
                 st.success(f"✅ Created user `{email}`")
     
+            # After action, clear the password field in session state
+            st.session_state.password = ""
+    
         st.divider()
     
         st.subheader("Current Users & Roles")
@@ -108,6 +115,7 @@ def run():
             st.dataframe(user_df, use_container_width=True)
         else:
             st.info("No users found.")
+    
 
         # --------- TAB 3: AUDIT LOGS ---------
     with tab3:
