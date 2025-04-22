@@ -111,7 +111,7 @@ def run():
                 
                             st.markdown("")
                 
-                            if st.button("Save changes"):
+                            if st.button("Save", key=f"save_btn_{ticket_number}"):
                                 try:
                                     ph_timezone = pytz.timezone("Asia/Manila")
                                     formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
