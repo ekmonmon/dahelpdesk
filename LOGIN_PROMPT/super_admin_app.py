@@ -77,37 +77,42 @@ def run():
     
 
     # --------- TAB 2: USER & ROLE MANAGEMENT ---------
-    with tab2:
+   with tab2:
         st.subheader("Create or Update User")
-    
-        # Input fields
+        
         email = st.text_input("User Email")
-        password_disabled = email.strip().lower() == "admin"
-        password = st.text_input("Password", type="password", disabled=password_disabled)
-        role = st.selectbox("Role", ["agent", "analyst", "super_admin"], disabled=password_disabled)
-    
-        if password_disabled:
-            st.warning("Modifying the default admin user is not allowed.")
-    
-        if st.button("Create/Update User", disabled=password_disabled):
-            existing_user = supabase.table("users").select("*").eq("email", email).execute().data
-            if existing_user:
-                supabase.table("users").update({"password": password, "role": role}).eq("email", email).execute()
-                st.success(f"🔄 Updated user `{email}`")
+        
+        # Use a different label to avoid browser autofill
+        password = st.text_input("Enter Secure Code", type="password", key="actual_password")
+        
+        role = st.selectbox("Role", ["agent", "analyst", "super_admin"])
+        
+        if st.button("Create/Update User"):
+            if email.strip().lower() == "admin":
+                st.warning("Modifying the main 'admin' account is not allowed.")
             else:
-                supabase.table("users").insert({"email": email, "password": password, "role": role}).execute()
-                st.success(f"✅ Created user `{email}`")
-    
+                existing_user = supabase.table("users").select("*").eq("email", email).execute().data
+                if existing_user:
+                    supabase.table("users").update({"password": password, "role": role}).eq("email", email).execute()
+                    st.success(f"🔄 Updated user `{email}`")
+                else:
+                    supabase.table("users").insert({"email": email, "password": password, "role": role}).execute()
+                    st.success(f"✅ Created user `{email}`")
+        
         st.divider()
-    
         st.subheader("Current Users & Roles")
-        users_response = supabase.table("users").select("id, email, role").neq("email", "admin").execute()
+        
+        users_response = supabase.table("users").select("id, email, role").execute()
         user_df = pd.DataFrame(users_response.data)
-    
-        if not user_df.empty:
-            st.dataframe(user_df, use_container_width=True)
+        
+        # Filter out 'admin' user from being shown
+        filtered_df = user_df[user_df["email"].str.lower() != "admin"]
+        
+        if not filtered_df.empty:
+            st.dataframe(filtered_df, use_container_width=True)
         else:
             st.info("No users found.")
+
 
 
         # --------- TAB 3: AUDIT LOGS ---------
