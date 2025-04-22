@@ -10,7 +10,7 @@ st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
 
 st.markdown("""
     <style>
-        .stTextInput>div>div>input, .stButton>button, div[data-testid='stMarkdownContainer'] {
+        .stTextInput>div>div>input, .stButton>button, div[data-testid="stMarkdownContainer"] {
             font-size: 12px !important;
         }
     </style>
