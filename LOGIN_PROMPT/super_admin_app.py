@@ -12,41 +12,73 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 def run():
     st.title("Super Admin Panel")
 
-    # Load ticket data
-    tickets_response = supabase.table("tickets").select("*").execute()
-    df = pd.DataFrame(tickets_response.data)
+    tab1, tab2, tab3 = st.tabs(["Ticket Management", "User & Role Management", "Audit Logs"])
 
-    if df.empty:
-        st.warning("No tickets available.")
-    else:
+    # --------- TAB 1: TICKET MANAGEMENT ---------
+    with tab1:
         st.subheader("Ticket Overview")
-        status_counts = df["status"].value_counts()
-        st.dataframe(status_counts.rename_axis("Status").reset_index(name="Count"), use_container_width=True)
+        tickets_response = supabase.table("tickets").select("*").execute()
+        df = pd.DataFrame(tickets_response.data)
 
-        # Delete closed tickets
-        st.subheader("Delete Closed Tickets")
-        closed_count = df[df["status"] == "Closed"].shape[0]
-        if closed_count == 0:
-            st.info("There are no closed tickets to delete.")
+        if df.empty:
+            st.warning("No tickets available.")
         else:
-            st.warning(f"You are about to delete **{closed_count}** closed tickets.")
-            confirm = st.checkbox("I confirm I want to delete all closed tickets.")
-            if st.button("Delete Closed Tickets") and confirm:
-                try:
-                    response = supabase.table("tickets").delete().eq("status", "Closed").execute()
-                    if response.data:
-                        st.success(f"✅ Deleted {len(response.data)} closed tickets.")
-                        st.rerun()
-                    else:
-                        st.warning("No tickets deleted.")
-                except Exception as e:
-                    st.error(f"Error: {e}")
+            status_counts = df["status"].value_counts()
+            st.dataframe(status_counts.rename_axis("Status").reset_index(name="Count"), use_container_width=True)
 
-    # Optional: Users Table
-    st.subheader("User Overview")
-    users_response = supabase.table("users").select("id, email, role").execute()
-    user_df = pd.DataFrame(users_response.data)
-    if not user_df.empty:
-        st.dataframe(user_df, use_container_width=True)
-    else:
-        st.info("No users found.")
+            st.subheader("Delete Closed Tickets")
+            closed_count = df[df["status"] == "Closed"].shape[0]
+            if closed_count == 0:
+                st.info("There are no closed tickets to delete.")
+            else:
+                st.warning(f"You are about to delete **{closed_count}** closed tickets.")
+                confirm = st.checkbox("I confirm I want to delete all closed tickets.")
+                if st.button("Delete Closed Tickets") and confirm:
+                    try:
+                        response = supabase.table("tickets").delete().eq("status", "Closed").execute()
+                        if response.data:
+                            st.success(f"✅ Deleted {len(response.data)} closed tickets.")
+                            st.rerun()
+                        else:
+                            st.warning("No tickets deleted.")
+                    except Exception as e:
+                        st.error(f"Error: {e}")
+
+    # --------- TAB 2: USER & ROLE MANAGEMENT ---------
+    with tab2:
+        st.subheader("Create or Update User")
+        email = st.text_input("User Email")
+        password = st.text_input("Password", type="password")
+        role = st.selectbox("Role", ["agent", "analyst", "super_admin"])
+
+        if st.button("Create/Update User"):
+            existing_user = supabase.table("users").select("*").eq("email", email).execute().data
+            if existing_user:
+                supabase.table("users").update({"password": password, "role": role}).eq("email", email).execute()
+                st.success(f"🔄 Updated user `{email}`")
+            else:
+                supabase.table("users").insert({"email": email, "password": password, "role": role}).execute()
+                st.success(f"✅ Created user `{email}`")
+
+        st.divider()
+        st.subheader("Current Users & Roles")
+        users_response = supabase.table("users").select("id, email, role").execute()
+        user_df = pd.DataFrame(users_response.data)
+        if not user_df.empty:
+            st.dataframe(user_df, use_container_width=True)
+        else:
+            st.info("No users found.")
+
+        # --------- TAB 3: AUDIT LOGS ---------
+    with tab3:
+        st.subheader("📜 Recent Ticket Updates")
+        ticket_logs = supabase.table("tickets").select("*").order("updated_at", desc=True).limit(100).execute().data
+        log_df = pd.DataFrame(ticket_logs)
+
+        if not log_df.empty:
+            # Optional: show only relevant columns
+            display_cols = ["id", "title", "status", "updated_at", "assigned_to"]
+            filtered_df = log_df[display_cols] if all(col in log_df.columns for col in display_cols) else log_df
+            st.dataframe(filtered_df.sort_values(by="updated_at", ascending=False), use_container_width=True)
+        else:
+            st.info("No recent ticket updates found.")
