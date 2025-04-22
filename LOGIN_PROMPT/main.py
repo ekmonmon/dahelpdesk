@@ -74,35 +74,32 @@ if "logged_in" not in st.session_state:
     st.session_state.user_role = None
 
 def login():
-    with st.container():
-        st.markdown('<div class="login-container"><div class="login-card">', unsafe_allow_html=True)
-        st.markdown("## 👋 Welcome to the Helpdesk")
-        st.write("Please login with your credentials.")
+    st.markdown('<div class="login-container"><div class="login-card">', unsafe_allow_html=True)
 
-        email = st.text_input("Email", placeholder="your@email.com", label_visibility="visible")
-        password = st.text_input("Password", type="password", placeholder="Enter your password", label_visibility="visible")
+    st.image("https://img.icons8.com/color/96/help.png", width=60)  # Optional: your logo or icon
+    st.markdown("## 👋 Welcome to the Helpdesk")
+    st.write("Please login with your credentials.")
 
-        login_button = st.button("🔐 Login", use_container_width=True)
-        st.markdown('</div></div>', unsafe_allow_html=True)
+    email = st.text_input("Email", placeholder="your@email.com")
+    password = st.text_input("Password", type="password", placeholder="Enter your password")
 
-        if login_button:
-            res = supabase.table("users").select("*").eq("email", email).eq("password", password).execute()
-            user_data = res.data
-            if user_data:
-                st.session_state.logged_in = True
-                st.session_state.user_role = user_data[0]["role"]
-                st.success("✅ Login successful. Redirecting...")
-                st.rerun()
-            else:
-                st.error("❌ Invalid email or password. Try again.")
-
+    if st.button("🔐 Login", use_container_width=True):
+        res = supabase.table("users").select("*").eq("email", email).eq("password", password).execute()
+        user_data = res.data
+        if user_data:
+            st.session_state.logged_in = True
+            st.session_state.user_role = user_data[0]["role"]
+            st.success("✅ Login successful. Redirecting...")
+            st.rerun()
+        else:
+            st.error("❌ Invalid email or password. Try again.")
 
     st.markdown('</div></div>', unsafe_allow_html=True)
 
 def logout():
     st.session_state.logged_in = False
     st.session_state.user_role = None
-    st.success("You have been logged out.")
+    st.success("✅ You have been logged out.")
     st.rerun()
 
 def main():
@@ -115,6 +112,7 @@ def main():
                 logout()
 
         st.markdown("### 🧭 Redirecting based on your role...")
+
         role = st.session_state.user_role
         if role == "analyst":
             analyst_run()
@@ -123,7 +121,7 @@ def main():
         elif role == "super_admin":
             super_admin_run()
         else:
-            st.error("Unknown role detected.")
+            st.error("❌ Unknown role detected.")
 
 if __name__ == "__main__":
     main()
