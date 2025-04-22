@@ -27,14 +27,28 @@ def run():
             status_counts = df["status"].value_counts()
             st.dataframe(status_counts.rename_axis("Status").reset_index(name="Count"), use_container_width=True)
     
-            # Pie chart
-            st.subheader("📊 Ticket Status Distribution")
+            # Pie chart with total count in the center
+            st.subheader("Ticket Status Distribution")
+            total_tickets = df.shape[0]
             fig = px.pie(
                 names=status_counts.index,
                 values=status_counts.values,
                 title="Tickets by Status",
                 color_discrete_sequence=px.colors.qualitative.Set3
             )
+            # Add total tickets count in the center
+            fig.update_layout(
+                annotations=[
+                    dict(
+                        text=f"Total: {total_tickets}",
+                        x=0.5, y=0.5,
+                        font_size=20,
+                        showarrow=False,
+                        font=dict(size=24, color="black", family="Arial")
+                    )
+                ]
+            )
+    
             st.plotly_chart(fig, use_container_width=True)
     
             # Delete closed tickets
@@ -55,6 +69,7 @@ def run():
                             st.warning("No tickets deleted.")
                     except Exception as e:
                         st.error(f"Error: {e}")
+    
 
     # --------- TAB 2: USER & ROLE MANAGEMENT ---------
     with tab2:
