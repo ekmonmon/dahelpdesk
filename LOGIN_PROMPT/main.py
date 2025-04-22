@@ -74,23 +74,28 @@ if "logged_in" not in st.session_state:
     st.session_state.user_role = None
 
 def login():
-    st.markdown('<div class="login-container"><div class="login-card">', unsafe_allow_html=True)
-    st.markdown("## 👋 Welcome to the Helpdesk")
-    st.write("Please login with your credentials.")
+    with st.container():
+        st.markdown('<div class="login-container"><div class="login-card">', unsafe_allow_html=True)
+        st.markdown("## 👋 Welcome to the Helpdesk")
+        st.write("Please login with your credentials.")
 
-    email = st.text_input("Email", placeholder="your@email.com")
-    password = st.text_input("Password", type="password", placeholder="Enter your password")
+        email = st.text_input("Email", placeholder="your@email.com", label_visibility="visible")
+        password = st.text_input("Password", type="password", placeholder="Enter your password", label_visibility="visible")
 
-    if st.button("🔐 Login", use_container_width=True):
-        res = supabase.table("users").select("*").eq("email", email).eq("password", password).execute()
-        user_data = res.data
-        if user_data:
-            st.session_state.logged_in = True
-            st.session_state.user_role = user_data[0]["role"]
-            st.success("✅ Login successful. Redirecting...")
-            st.rerun()
-        else:
-            st.error("❌ Invalid email or password. Try again.")
+        login_button = st.button("🔐 Login", use_container_width=True)
+        st.markdown('</div></div>', unsafe_allow_html=True)
+
+        if login_button:
+            res = supabase.table("users").select("*").eq("email", email).eq("password", password).execute()
+            user_data = res.data
+            if user_data:
+                st.session_state.logged_in = True
+                st.session_state.user_role = user_data[0]["role"]
+                st.success("✅ Login successful. Redirecting...")
+                st.rerun()
+            else:
+                st.error("❌ Invalid email or password. Try again.")
+
 
     st.markdown('</div></div>', unsafe_allow_html=True)
 
