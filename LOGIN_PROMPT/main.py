@@ -2,6 +2,8 @@ import streamlit as st
 from supabase import create_client
 from data_analyst_app import run as analyst_run
 from agent_app import run as agent_run
+from super_admin_app import run as super_admin_run
+
 
 # Supabase credentials
 SUPABASE_URL = "https://wuugzjctcrysqddghhtk.supabase.co"
@@ -62,8 +64,11 @@ def main():
             analyst_run()
         elif role == "agent":
             agent_run()
+        elif role == "super_admin":
+            super_admin_run()
         else:
             st.error("Unknown role.")
+
 
 if __name__ == "__main__":
     main()
