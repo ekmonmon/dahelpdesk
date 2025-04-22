@@ -80,42 +80,35 @@ def run():
     with tab2:
         st.subheader("Create or Update User")
     
-        # Initialize session state to clear password field
-        if "password" not in st.session_state:
-            st.session_state.password = ""  # Reset password field
-    
         # Input fields
         email = st.text_input("User Email")
-        password = st.text_input("Password", type="password", value=st.session_state.password)  # Password field without default value
-        role = st.selectbox("Role", ["agent", "analyst", "super_admin"])
+        password_disabled = email.strip().lower() == "admin"
+        password = st.text_input("Password", type="password", disabled=password_disabled)
+        role = st.selectbox("Role", ["agent", "analyst", "super_admin"], disabled=password_disabled)
     
-        if st.button("Create/Update User"):
-            # Check if user exists
+        if password_disabled:
+            st.warning("Modifying the default admin user is not allowed.")
+    
+        if st.button("Create/Update User", disabled=password_disabled):
             existing_user = supabase.table("users").select("*").eq("email", email).execute().data
             if existing_user:
-                # Update existing user
                 supabase.table("users").update({"password": password, "role": role}).eq("email", email).execute()
                 st.success(f"🔄 Updated user `{email}`")
             else:
-                # Insert new user
                 supabase.table("users").insert({"email": email, "password": password, "role": role}).execute()
                 st.success(f"✅ Created user `{email}`")
-    
-            # After action, clear the password field in session state
-            st.session_state.password = ""
     
         st.divider()
     
         st.subheader("Current Users & Roles")
-        # Fetch current users
-        users_response = supabase.table("users").select("id, email, role").execute()
+        users_response = supabase.table("users").select("id, email, role").neq("email", "admin").execute()
         user_df = pd.DataFrame(users_response.data)
-        
+    
         if not user_df.empty:
             st.dataframe(user_df, use_container_width=True)
         else:
             st.info("No users found.")
-    
+
 
         # --------- TAB 3: AUDIT LOGS ---------
     with tab3:
