@@ -82,7 +82,7 @@ def run():
                         col1, col2 = st.columns([3, 2], gap="large")
                 
                         with col1:
-                            st.markdown("###Ticket Info")
+                            st.markdown("Ticket Info")
                             st.markdown(f"**Submitted On:** {submission_time}")
                             st.markdown(f"**Description:**")
                             st.write(description)
@@ -94,14 +94,14 @@ def run():
                                 )
                 
                         with col2:
-                            st.markdown("###Status & Priority")
+                            st.markdown("Status & Priority")
                             st.markdown(
                                 f"**Priority:** <span style='color:{badge_color}; font-weight:bold'>{priority}</span><br>"
                                 f"**Current Status:** <code>{status}</code>",
                                 unsafe_allow_html=True
                             )
                 
-                            st.markdown("####Status")
+                            st.markdown("Status")
                             new_status = st.selectbox(
                                 "Choose new status:",
                                 status_tabs,
