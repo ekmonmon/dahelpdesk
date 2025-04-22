@@ -1,4 +1,5 @@
 import streamlit as st
+import plotly.express as px
 import pandas as pd
 from supabase import create_client, Client
 
@@ -19,13 +20,24 @@ def run():
         st.subheader("Ticket Overview")
         tickets_response = supabase.table("tickets").select("*").execute()
         df = pd.DataFrame(tickets_response.data)
-
+    
         if df.empty:
             st.warning("No tickets available.")
         else:
             status_counts = df["status"].value_counts()
             st.dataframe(status_counts.rename_axis("Status").reset_index(name="Count"), use_container_width=True)
-
+    
+            # Pie chart
+            st.subheader("📊 Ticket Status Distribution")
+            fig = px.pie(
+                names=status_counts.index,
+                values=status_counts.values,
+                title="Tickets by Status",
+                color_discrete_sequence=px.colors.qualitative.Set3
+            )
+            st.plotly_chart(fig, use_container_width=True)
+    
+            # Delete closed tickets
             st.subheader("Delete Closed Tickets")
             closed_count = df[df["status"] == "Closed"].shape[0]
             if closed_count == 0:
@@ -71,7 +83,7 @@ def run():
 
         # --------- TAB 3: AUDIT LOGS ---------
     with tab3:
-        st.subheader("📜 Recent Ticket Updates")
+        st.subheader("Recent Ticket Updates")
         ticket_logs = supabase.table("tickets").select("*").order("updated_at", desc=True).limit(100).execute().data
         log_df = pd.DataFrame(ticket_logs)
 
