@@ -1,74 +1,130 @@
 import streamlit as st
-from supabase import create_client
-from data_analyst_app import run as analyst_run
-from agent_app import run as agent_run
-from super_admin_app import run as super_admin_run
+import plotly.express as px
+import pandas as pd
+from supabase import create_client, Client
 
+st.set_page_config(page_title="Super Admin Panel", layout="wide")
 
-# Supabase credentials
+# Supabase config
 SUPABASE_URL = "https://wuugzjctcrysqddghhtk.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1dWd6amN0Y3J5c3FkZGdoaHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NjY2NTcsImV4cCI6MjA2MDM0MjY1N30.JjraFNEpG-CUDqT77pk9KDlMkdsM_sH3alD50gEm1EE"
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Hide Streamlit toolbar
-st.markdown("""
-    <style>
-    div[data-testid="stToolbar"] {
-        display: none !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
+def run():
+    st.title("Super Admin Panel")
 
-# Initialize session state
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-    st.session_state.user_role = None
+    tab1, tab2, tab3 = st.tabs(["Ticket Management", "User & Role Management", "Audit Logs"])
 
-def login():
-    st.title("Login Page")
-    email = st.text_input("Email")
-    password = st.text_input("Password", type="password")
-
-    if st.button("Login"):
-        res = supabase.table("users").select("*").eq("email", email).eq("password", password).execute()
-        user_data = res.data
-
-        if user_data:
-            st.session_state.logged_in = True
-            st.session_state.user_role = user_data[0]["role"]
-            st.success("Login successful. Redirecting...")
-            st.rerun()
+    # --------- TAB 1: TICKET MANAGEMENT ---------
+    with tab1:
+        st.subheader("Ticket Overview")
+        tickets_response = supabase.table("tickets").select("*").execute()
+        df = pd.DataFrame(tickets_response.data)
+    
+        if df.empty:
+            st.warning("No tickets available.")
         else:
-            st.error("Invalid credentials. If error persists, please contact an admin.")
+            status_counts = df["status"].value_counts()
+            st.dataframe(status_counts.rename_axis("Status").reset_index(name="Count"), use_container_width=True)
+    
+            # Enhanced pie chart with hole and total ticket count in the center
+            st.subheader("Ticket Status Distribution")
+            total_tickets = df.shape[0]
+            fig = px.pie(
+                names=status_counts.index,
+                values=status_counts.values,
+                title="Tickets by Status",
+                color_discrete_sequence=px.colors.qualitative.Set3
+            )
+            # Make it a donut chart by setting the 'hole' parameter
+            fig.update_traces(hole=0.4)  # Adjust hole size as needed
+    
+            # Add total tickets count in the center
+            fig.update_layout(
+                annotations=[
+                    dict(
+                        text=f"{total_tickets}",
+                        x=0.5, y=0.5,
+                        font_size=30,  # Font size for the count
+                        showarrow=False,
+                        font=dict(size=30, color="black", family="Arial")
+                    )
+                ],
+                title="Tickets by Status"
+            )
+    
+            st.plotly_chart(fig, use_container_width=True)
+    
+            # Delete closed tickets
+            st.subheader("Delete Closed Tickets")
+            closed_count = df[df["status"] == "Closed"].shape[0]
+            if closed_count == 0:
+                st.info("There are no closed tickets to delete.")
+            else:
+                st.warning(f"You are about to delete **{closed_count}** closed tickets.")
+                confirm = st.checkbox("I confirm I want to delete all closed tickets.")
+                if st.button("Delete Closed Tickets") and confirm:
+                    try:
+                        response = supabase.table("tickets").delete().eq("status", "Closed").execute()
+                        if response.data:
+                            st.success(f"✅ Deleted {len(response.data)} closed tickets.")
+                            st.rerun()
+                        else:
+                            st.warning("No tickets deleted.")
+                    except Exception as e:
+                        st.error(f"Error: {e}")
 
-def logout():
-    st.session_state.logged_in = False
-    st.session_state.user_role = None
-    st.success("You have been logged out.")
-    st.rerun()
+    
 
-def main():
-    if not st.session_state.logged_in:
-        login()
-    else:
-        # Top-right logout button using columns
-        col1, col2, col3 = st.columns([6, 1, 1])
-        with col3:
-            # Only use the Streamlit button for logout
-            if st.button("Logout", use_container_width=True):
-                logout()
-
-        # Run appropriate app based on role
-        role = st.session_state.user_role
-        if role == "analyst":
-            analyst_run()
-        elif role == "agent":
-            agent_run()
-        elif role == "super_admin":
-            super_admin_run()
+    # --------- TAB 2: USER & ROLE MANAGEMENT ---------
+   with tab2:
+        st.subheader("Create or Update User")
+        
+        email = st.text_input("User Email")
+        
+        # Use a different label to avoid browser autofill
+        password = st.text_input("Enter Secure Code", type="password", key="actual_password")
+        
+        role = st.selectbox("Role", ["agent", "analyst", "super_admin"])
+        
+        if st.button("Create/Update User"):
+            if email.strip().lower() == "admin":
+                st.warning("Modifying the main 'admin' account is not allowed.")
+            else:
+                existing_user = supabase.table("users").select("*").eq("email", email).execute().data
+                if existing_user:
+                    supabase.table("users").update({"password": password, "role": role}).eq("email", email).execute()
+                    st.success(f"🔄 Updated user `{email}`")
+                else:
+                    supabase.table("users").insert({"email": email, "password": password, "role": role}).execute()
+                    st.success(f"✅ Created user `{email}`")
+        
+        st.divider()
+        st.subheader("Current Users & Roles")
+        
+        users_response = supabase.table("users").select("id, email, role").execute()
+        user_df = pd.DataFrame(users_response.data)
+        
+        # Filter out 'admin' user from being shown
+        filtered_df = user_df[user_df["email"].str.lower() != "admin"]
+        
+        if not filtered_df.empty:
+            st.dataframe(filtered_df, use_container_width=True)
         else:
-            st.error("Unknown role.")
+            st.info("No users found.")
 
 
-if __name__ == "__main__":
-    main()
+
+        # --------- TAB 3: AUDIT LOGS ---------
+    with tab3:
+        st.subheader("Recent Ticket Updates")
+        ticket_logs = supabase.table("tickets").select("*").order("updated_at", desc=True).limit(100).execute().data
+        log_df = pd.DataFrame(ticket_logs)
+
+        if not log_df.empty:
+            # Optional: show only relevant columns
+            display_cols = ["id", "title", "status", "updated_at", "assigned_to"]
+            filtered_df = log_df[display_cols] if all(col in log_df.columns for col in display_cols) else log_df
+            st.dataframe(filtered_df.sort_values(by="updated_at", ascending=False), use_container_width=True)
+        else:
+            st.info("No recent ticket updates found.")
