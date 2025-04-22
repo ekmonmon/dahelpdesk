@@ -79,23 +79,31 @@ def run():
     # --------- TAB 2: USER & ROLE MANAGEMENT ---------
     with tab2:
         st.subheader("Create or Update User")
+    
+        # Input fields
         email = st.text_input("User Email")
-        password = st.text_input("Password", type="password")
+        password = st.text_input("Password", type="password")  # Password field without default value
         role = st.selectbox("Role", ["agent", "analyst", "super_admin"])
-
+    
         if st.button("Create/Update User"):
+            # Check if user exists
             existing_user = supabase.table("users").select("*").eq("email", email).execute().data
             if existing_user:
+                # Update existing user
                 supabase.table("users").update({"password": password, "role": role}).eq("email", email).execute()
                 st.success(f"🔄 Updated user `{email}`")
             else:
+                # Insert new user
                 supabase.table("users").insert({"email": email, "password": password, "role": role}).execute()
                 st.success(f"✅ Created user `{email}`")
-
+    
         st.divider()
+    
         st.subheader("Current Users & Roles")
+        # Fetch current users
         users_response = supabase.table("users").select("id, email, role").execute()
         user_df = pd.DataFrame(users_response.data)
+        
         if not user_df.empty:
             st.dataframe(user_df, use_container_width=True)
         else:
