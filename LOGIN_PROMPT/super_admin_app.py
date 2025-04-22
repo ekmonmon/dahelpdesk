@@ -2,13 +2,14 @@ import streamlit as st
 import pandas as pd
 from supabase import create_client, Client
 
+st.set_page_config(page_title="Super Admin Panel", layout="wide")
+
 # Supabase config
 SUPABASE_URL = "https://wuugzjctcrysqddghhtk.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1dWd6amN0Y3J5c3FkZGdoaHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NjY2NTcsImV4cCI6MjA2MDM0MjY1N30.JjraFNEpG-CUDqT77pk9KDlMkdsM_sH3alD50gEm1EE"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def run():
-    st.set_page_config(page_title="Super Admin Panel", layout="wide")
     st.title("🛡️ Super Admin Panel")
 
     # Load ticket data
