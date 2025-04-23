@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import requests
 from datetime import datetime
@@ -18,7 +19,11 @@ st.markdown("""
 
 # App entry point
 def run():
-    st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
+    components.html("""
+        <script>
+            document.title = "Data Analyst Panel";
+        </script>
+    """, height=0)
     st.title("Data Analyst Helpdesk")
 
     # Supabase config

@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 from supabase import create_client
 from data_analyst_app import run as analyst_run
 from agent_app import run as agent_run
@@ -26,6 +27,11 @@ if "logged_in" not in st.session_state:
 
 def login():
     st.set_page_config(page_title='Login Page', layout="centered")
+    components.html("""
+        <script>
+            document.title = "Login";
+        </script>
+    """, height=0)
     st.markdown("""
         <style>
         input {
