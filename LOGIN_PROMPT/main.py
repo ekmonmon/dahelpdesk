@@ -25,6 +25,7 @@ if "logged_in" not in st.session_state:
     st.session_state.user_role = None
 
 def login():
+    st.set_page_config(page_title='Login Page', layout="centered")
     st.markdown("""
         <style>
         input {
