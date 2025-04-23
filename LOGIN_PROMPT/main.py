@@ -48,6 +48,9 @@ def login():
             border-radius: 8px;
             border: none;
         }
+        div[data-testid="stMainBlockContainer"]{
+            max-width:450px
+        }
         </style>
     """, unsafe_allow_html=True)
 
@@ -83,7 +86,6 @@ def main():
     if not st.session_state.logged_in:
         login()
     else:
-        # Top-right logout button using columns
         col1, col2, col3 = st.columns([6, 1, 1])
         with col3:
             # Only use the Streamlit button for logout
