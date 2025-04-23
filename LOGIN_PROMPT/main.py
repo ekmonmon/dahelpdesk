@@ -11,13 +11,13 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Hide Streamlit toolbar
-st.markdown("""
-    <style>
-    div[data-testid="stToolbar"] {
-        display: none !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
+#st.markdown("""
+    #<style>
+    #div[data-testid="stToolbar"] {
+       # display: none !important;
+    #}
+    #</style>
+#""", unsafe_allow_html=True)
 
 # Initialize session state
 if "logged_in" not in st.session_state:
