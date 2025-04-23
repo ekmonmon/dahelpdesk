@@ -25,22 +25,66 @@ if "logged_in" not in st.session_state:
     st.session_state.user_role = None
 
 def login():
-    st.set_page_config(page_title="Login Page", layout="wide")
-    st.title("Login Page")
-    email = st.text_input("Email")
-    password = st.text_input("Password", type="password")
+    st.set_page_config(page_title="Login", layout="centered")
 
-    if st.button("Login"):
-        res = supabase.table("users").select("*").eq("email", email).eq("password", password).execute()
-        user_data = res.data
+    # Custom CSS for styling
+    st.markdown("""
+        <style>
+        .main {
+            background-color: #f5f7fa;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            max-width: 400px;
+            margin: auto;
+            margin-top: 10%;
+        }
+        input {
+            padding: 10px !important;
+            border-radius: 8px !important;
+        }
+        .stButton>button {
+            width: 100%;
+            background-color: #3366cc;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
-        if user_data:
-            st.session_state.logged_in = True
-            st.session_state.user_role = user_data[0]["role"]
-            st.success("Login successful. Redirecting...")
-            st.rerun()
-        else:
-            st.error("Invalid credentials. If error persists, please contact an admin.")
+    with st.container():
+        st.markdown('<div class="main">', unsafe_allow_html=True)
+
+        st.image("https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_TV_2015.png", width=100)
+        st.markdown("## Welcome Back")
+        st.markdown("Please log in to continue")
+
+        email = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+
+        login_button = st.button("Login")
+
+        if login_button:
+            if email == "admin" and password == "1234":
+                st.success("✅ Login successful!")
+            else:
+                st.error("❌ Invalid username or password")
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        if st.button("Login"):
+            res = supabase.table("users").select("*").eq("email", email).eq("password", password).execute()
+            user_data = res.data
+
+            if user_data:
+                st.session_state.logged_in = True
+                st.session_state.user_role = user_data[0]["role"]
+                st.success("Login successful. Redirecting...")
+                st.rerun()
+            else:
+                st.error("Invalid credentials. If error persists, please contact an admin.")
 
 def logout():
     st.session_state.logged_in = False
