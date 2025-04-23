@@ -25,6 +25,7 @@ if "logged_in" not in st.session_state:
     st.session_state.user_role = None
 
 def login():
+    st.set_page_config(page_title="Login Page", layout="wide")
     st.title("Login Page")
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
