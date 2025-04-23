@@ -6,7 +6,7 @@ import pytz
 from supabase import create_client, Client
 
 # Set page layout and custom CSS for font size reduction
-st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
+
 
 st.markdown("""
     <style>
@@ -18,6 +18,7 @@ st.markdown("""
 
 # App entry point
 def run():
+    st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
     st.title("Data Analyst Helpdesk")
 
     # Supabase config
