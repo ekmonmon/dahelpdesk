@@ -40,7 +40,7 @@ def login():
     with st.container():
         st.markdown('<div class="main">', unsafe_allow_html=True)
         logo = Image.open("assets/images/logo.png")
-        st.image(logo, caption="Logo", width=100)
+        st.image(logo, width=100)
         st.markdown("## Welcome Back!")
         st.markdown("Please log in to continue")
 
