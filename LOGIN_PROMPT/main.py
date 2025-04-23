@@ -49,7 +49,7 @@ def login():
             border: none;
         }
         div[data-testid="stMainBlockContainer"]{
-            max-width:450px
+            max-width:575px
         }
         </style>
     """, unsafe_allow_html=True)
