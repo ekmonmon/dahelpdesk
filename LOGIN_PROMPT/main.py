@@ -3,7 +3,7 @@ from supabase import create_client
 from data_analyst_app import run as analyst_run
 from agent_app import run as agent_run
 from super_admin_app import run as super_admin_run
-
+from PIL import image
 
 # Supabase credentials
 SUPABASE_URL = "https://wuugzjctcrysqddghhtk.supabase.co"
@@ -31,14 +31,6 @@ def login():
             padding: 10px !important;
             border-radius: 8px !important;
         }
-        .stButton>button {
-            width: 100%;
-            background-color: #3366cc;
-            color: white;
-            padding: 10px;
-            border-radius: 8px;
-            border: none;
-        }
         div[data-testid="stMainBlockContainer"]{
             max-width:575px
         }
@@ -47,9 +39,9 @@ def login():
 
     with st.container():
         st.markdown('<div class="main">', unsafe_allow_html=True)
-
-        st.image("https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_TV_2015.png", width=100)
-        st.markdown("## Welcome Back")
+        logo = Image.open("assets/images/")
+        st.image(logo, caption="Logo", width=100)
+        st.markdown("## Welcome Back!")
         st.markdown("Please log in to continue")
 
         email = st.text_input("Username")
