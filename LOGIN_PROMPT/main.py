@@ -25,9 +25,6 @@ if "logged_in" not in st.session_state:
     st.session_state.user_role = None
 
 def login():
-    st.title("Login Page")
-
-    # Custom CSS for styling
     st.markdown("""
         <style>
         .main {
@@ -63,16 +60,6 @@ def login():
 
         email = st.text_input("Username")
         password = st.text_input("Password", type="password")
-
-        login_button = st.button("Login")
-
-        if login_button:
-            if email == "admin" and password == "1234":
-                st.success("✅ Login successful!")
-            else:
-                st.error("❌ Invalid username or password")
-
-        st.markdown('</div>', unsafe_allow_html=True)
 
         if st.button("Login"):
             res = supabase.table("users").select("*").eq("email", email).eq("password", password).execute()
