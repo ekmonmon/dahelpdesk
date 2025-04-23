@@ -27,15 +27,6 @@ if "logged_in" not in st.session_state:
 def login():
     st.markdown("""
         <style>
-        .main {
-            background-color: #f5f7fa;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-            max-width: 400px;
-            margin: auto;
-            margin-top: 10%;
-        }
         input {
             padding: 10px !important;
             border-radius: 8px !important;
