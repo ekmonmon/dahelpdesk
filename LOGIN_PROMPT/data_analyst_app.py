@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import pandas as pd
 import requests
 from datetime import datetime
@@ -7,11 +6,17 @@ import pytz
 from supabase import create_client, Client
 
 # Set page layout and custom CSS for font size reduction
-
+st.set_page_config(page_title="Data Analyst Helpdesk", layout="wide")
 
 st.markdown("""
     <style>
-        .stTextInput>div>div>input, .stButton>button, div[data-testid="stMarkdownContainer"] {
+        body {
+            font-size: 12px !important;
+        }
+        .stButton>button {
+            font-size: 12px !important;
+        }
+        .stTextInput>div>div>input {
             font-size: 12px !important;
         }
     </style>
@@ -19,11 +24,6 @@ st.markdown("""
 
 # App entry point
 def run():
-    components.html("""
-        <script>
-            document.title = "Data Analyst Panel";
-        </script>
-    """, height=0)
     st.title("Data Analyst Helpdesk")
 
     # Supabase config
@@ -84,54 +84,49 @@ def run():
                 badge_color = {"High": "red", "Medium": "orange", "Low": "green"}.get(priority, "gray")
 
                 with st.container():
-                    with st.expander(f"Ticket #{ticket_number} — *{request_type}*", expanded=False):
-                        col1, col2 = st.columns([3, 2], gap="large")
-                
+                    st.markdown(
+                        f"<h5 style='margin-bottom:0;'>Ticket #{ticket_number} - <i>{request_type}</i></h5>",
+                        unsafe_allow_html=True
+                    )
+
+                    with st.expander("Information"):
+                        col1, col2 = st.columns([3, 2])
                         with col1:
-                            st.markdown("Ticket Info")
                             st.markdown(f"**Submitted On:** {submission_time}")
-                            st.markdown(f"**Description:**")
-                            st.write(description)
-                
+                            st.markdown(f"**Description:** {description}")
                             if attachment_url:
-                                st.markdown(
-                                    f"[📎 **Download Attachment**]({attachment_url})",
-                                    unsafe_allow_html=True
-                                )
-                
+                                st.markdown(f"[📎 Download Attachment]({attachment_url})")
+                        
                         with col2:
-                            st.markdown("Status & Priority")
                             st.markdown(
                                 f"**Priority:** <span style='color:{badge_color}; font-weight:bold'>{priority}</span><br>"
-                                f"**Current Status:** <code>{status}</code>",
+                                f"**Current Status:** {status}",
                                 unsafe_allow_html=True
                             )
-                
-                            st.markdown("Status")
+
                             new_status = st.selectbox(
-                                "Choose new status:",
+                                "Update Status:",
                                 status_tabs,
                                 index=status_tabs.index(status),
                                 key=f"status_select_{ticket_number}"
                             )
-                
-                            st.markdown("")
-                
-                            if st.button("Save", key=f"save_btn_{ticket_number}"):
+
+                            if st.button(f"Update Ticket #{ticket_number}", key=f"update_btn_{ticket_number}"):
                                 try:
                                     ph_timezone = pytz.timezone("Asia/Manila")
                                     formatted_time = datetime.now(pytz.utc).astimezone(ph_timezone).strftime("%Y-%m-%d %H:%M:%S")
-                
+
+                                    # Update ticket in Supabase
                                     ticket_number_casted = int(ticket_number) if str(ticket_number).isdigit() else ticket_number
-                
                                     response = supabase.table("tickets").update({
                                         "status": new_status,
                                         "updated_at": formatted_time
                                     }).eq("ticket_number", ticket_number_casted).execute()
-                
+
                                     if response.data:
-                                        st.success(f"Ticket #{ticket_number} updated to **{new_status}** at {formatted_time} (PH Time)")
-                
+                                        st.success(f"Ticket {ticket_number} updated to '{new_status}' at {formatted_time} (PH Time)")
+
+                                        # Log update to status_notifications table
                                         supabase.table("status_notifications").insert({
                                             "ticket_number": ticket_number,
                                             "status": new_status
