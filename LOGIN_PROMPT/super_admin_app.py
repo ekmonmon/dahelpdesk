@@ -3,6 +3,7 @@ import plotly.express as px
 import pandas as pd
 from supabase import create_client, Client
 
+st.set_page_config(page_title="Super Admin Panel", layout="wide")
 
 # Supabase config
 SUPABASE_URL = "https://wuugzjctcrysqddghhtk.supabase.co"
@@ -10,7 +11,6 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def run():
-    st.set_page_config(page_title="Super Admin Panel", layout="wide")
     st.title("Super Admin Panel")
 
     tab1, tab2, tab3 = st.tabs(["Ticket Management", "User & Role Management", "Audit Logs"])
