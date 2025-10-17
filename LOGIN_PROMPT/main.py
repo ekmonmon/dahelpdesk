@@ -6,8 +6,8 @@ from super_admin_app import run as super_admin_run
 
 
 # Supabase credentials
-SUPABASE_URL = "https://wuugzjctcrysqddghhtk.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1dWd6amN0Y3J5c3FkZGdoaHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NjY2NTcsImV4cCI6MjA2MDM0MjY1N30.JjraFNEpG-CUDqT77pk9KDlMkdsM_sH3alD50gEm1EE"
+SUPABASE_URL = "https://xndhyhelodosrrzjigzb.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhuZGh5aGVsb2Rvc3JyemppZ3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA2NDA5OTUsImV4cCI6MjA3NjIxNjk5NX0.lfqkmbtQEQmhoHHuGCXJKUcH8JXUjfJUdtHACuPUVHw"
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Hide Streamlit toolbar
